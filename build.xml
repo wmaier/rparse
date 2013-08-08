@@ -1,0 +1,98 @@
+<!--
+/*******************************************************************************
+ * File build.xml
+ * 
+ * Authors:
+ *    Wolfgang Maier
+ *        
+ * Copyright:
+ *    Wolfgang Maier, 2012
+ * 
+ * This file is part of rparse, see <www.wolfgang-maier.net/rparse>.
+ * 
+ * rparse is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free 
+ * Software Foundation; either version 2 of the License, or (at your option) 
+ * any later version.
+ * 
+ * rparse is distributed in the hope that it will be useful, but WITHOUT ANY 
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY 
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public 
+ * License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along 
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+-->
+
+<!-- 
+
+Author: Wolfgang Maier <maierw@hhu.de>
+
+This is the ant build file for rparse. See the README file in the same package for
+more information or consult the rparse homepage at www.phil-fak.uni-duesseldorf.de/rparse
+for more information.
+
+-->
+
+<!-- By default, we build a jar -->
+<project name="rparse" default="pack" basedir=".">
+
+<!-- rparse home -->
+<property name="rparse" location="."/>
+
+<!-- location of rparse source -->
+<property name="rparse.src" location="${rparse}/src"/>
+
+<!-- location of rparse build info -->
+<property name="rparse.bin" location="${rparse}/bin"/>
+
+<!-- location of rparse binaries -->
+<property name="rparse.build" location="${rparse}/build"/>
+
+<!-- packs a jar -->
+<target name="pack" depends="compile">
+  <tstamp>
+    <format property="today" pattern="MMddyy-hhmmss" locale="en,US"/>
+  </tstamp>
+  <delete> 
+    <fileset dir="${rparse}" includes="**/*~" defaultexcludes="no"/>
+    <fileset dir="${rparse}" includes="*.jar" defaultexcludes="no"/>
+  </delete>
+  <property name="version.num" value="2.0"/>
+  <manifest file="${rparse.build}/rparse-manifest">
+    <attribute name="Built-By" value="${user.name}"/>
+    <attribute name="Main-Class" value="de.tuebingen.rparse.ui.Rparse"/>
+    <attribute name="Implementation-Version" value="${version.num}-${today}"/>         
+    <attribute name="Built-Date" value="${today}"/>   
+    <attribute name="Class-Path" value="${jgraph.path}"/>
+  </manifest>
+  <jar destfile="${rparse.build}/rparse-${version.num}-${today}.jar"
+       basedir="${rparse.bin}"
+       includes="**/*.class **/*.headrules **/*.xsl"
+       manifest="${rparse.build}/rparse-manifest"/>
+  <copy file="${rparse.build}/rparse-${version.num}-${today}.jar" tofile="${rparse}/rparse.jar"/>
+</target>
+
+<target name="compile" depends="init">
+  <javac srcdir="${rparse.src}" destdir="${rparse.bin}" includeantruntime="false" debug="true" debuglevel="lines,vars,source">
+     <classpath>
+      <pathelement path="${classpath}"/>
+      <pathelement path="${jgraph.path}"/>
+    </classpath>
+    <compilerarg value="-Xlint"/>
+  </javac>
+  <copy todir="${rparse.bin}">
+    <fileset dir="${rparse.src}" includes="**/*.headrules **/*.xsl*"/>
+  </copy>
+</target>
+
+<target name="init">
+  <tstamp/>
+  <mkdir dir="${rparse.bin}"/>
+  <mkdir dir="${rparse.build}"/>
+</target>
+
+</project>
+
+
