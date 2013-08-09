@@ -6,15 +6,15 @@
 Introduction
 ------------
 
-This package contains the code of rparse, a data-driven parser for
-Probabilistic Linear Context-Free Rewriting Systems (PLCFRS). It has
-been developed at the Emmy Noether group of Prof. Dr. Laura Kallmeyer
-at the University of Tübingen, Germany and is now maintained at her
-project "Grammar Formalisms beyond Context-Free Grammars and their 
-use for Machine Learning Tasks" at the Department for Computational
-Linguistics at the Institute for Language and Information at the
-University of Düsseldorf, Germany. The project is sponsored by
-Deutsche Forschungsgemeinschaft (DFG). 
+rparse is a data-driven parser for Probabilistic Linear Context-Free
+Rewriting Systems (PLCFRS). It has been developed at the Emmy Noether
+group of Prof. Dr. Laura Kallmeyer at the University of Tübingen,
+Germany and is now maintained at her project "Grammar Formalisms
+beyond Context-Free Grammars and their  use for Machine Learning
+Tasks" at the Department for Computational Linguistics at the
+Institute for Language and Information at the University of
+Düsseldorf, Germany. The project is sponsored by Deutsche
+Forschungsgemeinschaft (DFG).  
 
 In order to reference this parser, please cite
 
@@ -63,10 +63,10 @@ Compile
 
 The parser is written in Java, Java 7 is required. In order to run it,
 you need the jgrapht library. jgrapht is included with this release in
-the /lib directory of the package You have to compile the parser
-against your copy of jgrapht. This can be done using the ant build
-file included in the rparse package, to which you have to pass the
-location of the compiled jgrapht library as follows: 
+the /lib directory. You have to compile the parser against your copy
+of jgrapht. This can be done using the ant build file included in the
+rparse package, to which you have to pass the location of the compiled
+jgrapht library as follows:  
 
 ``$ ant -Djgraph.path="/path/to/jgrapht/"``
 
