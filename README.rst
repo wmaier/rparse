@@ -5,9 +5,11 @@
 .. image:: http://www.wolfgang-maier.net/trac-common/ut.png
    :align: right
    :alt: UT Logo
+
 .. image:: http://www.sfs.uni-tuebingen.de/emmy/emmy.jpg
    :align: right
    :alt: Emmy Noether Logo
+
 .. image:: http://www.wolfgang-maier.net/trac-common/hhu.gif
    :align: right
    :alt: HHU Logo
