@@ -1,8 +1,16 @@
+=====================================================================
  rparse - a data-driven parser for Probabilistic LCFRS
 =====================================================================
 
-Introduction
-------------
+.. image:: http://www.wolfgang-maier.net/trac-common/ut.png
+   :align: right
+   :alt: UT Logo
+.. image:: http://www.sfs.uni-tuebingen.de/emmy/emmy.jpg
+   :align: right
+   :alt: Emmy Noether Logo
+.. image:: http://www.wolfgang-maier.net/trac-common/hhu.gif
+   :align: right
+   :alt: HHU Logo
 
 rparse is a data-driven parser for Probabilistic Linear Context-Free
 Rewriting Systems (PLCFRS). It has been developed at the Emmy Noether
@@ -13,6 +21,11 @@ Tasks" at the Department for Computational Linguistics at the
 Institute for Language and Information at the University of
 Düsseldorf, Germany. The project is sponsored by Deutsche
 Forschungsgemeinschaft (DFG).  
+
+.. contents::
+
+References
+==========
 
 In order to reference this parser, please cite
 
@@ -54,11 +67,11 @@ http://www.phil.hhu.de/rparse.
 
 
 Quick Start
------------
+===========
 
 
 Compile
-~~~~~~~
+-------
 
 The parser is written in Java, Java 7 is required. In order to run it,
 you need the jgrapht library. jgrapht is included with this release in
@@ -76,7 +89,7 @@ jars in the class path and use the rparse entry point
 ``de.tuebingen.rparse.ui.Rparse``. 
 
 Run
-~~~
+---
 
 The default format for training is the export format. In order to
 train the parser on NeGra, run something like the following::
@@ -108,7 +121,7 @@ In order to evaluate your output, use::
 Make sure you also check the output of java -jar rparse.jar -help.
 
 Changelog
-------------------
+=========
 
 **New in version 2.0**
 
