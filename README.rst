@@ -1,8 +1,6 @@
-=====================================================================
  rparse - a data-driven parser for Probabilistic LCFRS
 =====================================================================
 
-------------
 Introduction
 ------------
 
@@ -54,12 +52,13 @@ This is version 2.0. For more information, update notifications and
 contact information, please refer to the rparse homepage at
 http://www.phil.hhu.de/rparse.
 
------------
+
 Quick Start
 -----------
 
+
 Compile
--------
+~~~~~~~
 
 The parser is written in Java, Java 7 is required. In order to run it,
 you need the jgrapht library. jgrapht is included with this release in
@@ -77,7 +76,7 @@ jars in the class path and use the rparse entry point
 ``de.tuebingen.rparse.ui.Rparse``. 
 
 Run
----
+~~~
 
 The default format for training is the export format. In order to
 train the parser on NeGra, run something like the following::
@@ -108,16 +107,16 @@ In order to evaluate your output, use::
 
 Make sure you also check the output of java -jar rparse.jar -help.
 
-
-New in version 2.0
+Changelog
 ------------------
+
+**New in version 2.0**
 
 Fast parser for (2,2)-PLCFRS. Can be accessed via -parserType
 cyktwo. Default in mode -doParse remains old parser 
 (-parserType cyk).
 
 
-New in Version 1.0.1
---------------------
+**New in Version 1.0.1**
 
 Several bugfixes
