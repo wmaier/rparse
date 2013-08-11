@@ -2,10 +2,6 @@
  rparse - a data-driven parser for Probabilistic LCFRS
 =====================================================================
 
-.. image:: http://www.wolfgang-maier.net/trac-common/ut.png
-   :align: right
-   :alt: UT Logo
-
 .. image:: http://www.sfs.uni-tuebingen.de/emmy/emmy.jpg
    :align: right
    :alt: Emmy Noether Logo
