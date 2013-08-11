@@ -58,10 +58,9 @@ License
 =======
 
 The code is released under the GNU General Public Licence (GPL) 2.0 or
-higher. The license text can be found in the file license.txt. The
-release include a copy of the library jgrapht, which is licensed under
-the GNU Lesser General Public License (LGPL) 2.1. The full license
-texts of the GPL 2.0 and the LGPL 2.1 can be found at 
+higher. The release include a copy of the library *jgrapht*, which is
+licensed under the GNU Lesser General Public License (LGPL) 2.1. The
+full license texts of the GPL 2.0 and the LGPL 2.1 can be found at  
 http://www.gnu.org/licenses/gpl-2.0 and
 http://www.gnu.org/licenses/old-licenses/lgpl-2.1.  
 
@@ -73,13 +72,13 @@ Compile
 -------
 
 The parser is written in Java, Java 7 is required. In order to run it,
-you need the jgrapht library. jgrapht (http://jgrapht.org) is included
+you need the *jgrapht* library. *jgrapht* (http://jgrapht.org) is included
 with this release in the /lib directory. You have to compile the
-parser against your copy of jgrapht. This can be done using the ant
+parser against your copy of *jgrapht*. This can be done using the ant
 build file included in the rparse package, to which you have to pass
-the location of the compiled jgrapht library as follows::
+the location of the compiled *jgrapht* library as follows::
 
-  $ ant -Djgraph.path="/path/to/jgrapht/"
+  $ ant -Djgraph.path="/path/to/jgrapht"
 
 This will build a jar file rparse.jar in the rparse package. The
 classpath in the manifest of the jar file will contain the path to
