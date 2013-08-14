@@ -2,19 +2,31 @@
  rparse - a data-driven parser for Probabilistic LCFRS
 =====================================================================
 
-------------
-Introduction
-------------
+.. image:: http://www.sfs.uni-tuebingen.de/emmy/emmy.jpg
+   :align: right
+   :alt: Emmy Noether Logo
+
+.. image:: http://www.wolfgang-maier.net/trac-common/hhu.gif
+   :align: right
+   :alt: HHU Logo
 
 rparse is a data-driven parser for Probabilistic Linear Context-Free
 Rewriting Systems (PLCFRS). It has been developed at the Emmy Noether
 group of Prof. Dr. Laura Kallmeyer at the University of Tübingen,
 Germany and is now maintained at her project "Grammar Formalisms
-beyond Context-Free Grammars and their  use for Machine Learning
-Tasks" at the Department for Computational Linguistics at the
-Institute for Language and Information at the University of
-Düsseldorf, Germany. The project is sponsored by Deutsche
-Forschungsgemeinschaft (DFG).  
+beyond Context-Free Grammars and their use for Machine Learning Tasks"
+at the Department for Computational Linguistics at the Institute for
+Language and Information at the University of Düsseldorf, Germany (see
+http://phil.hhu.de/beyond-cfg). The project is sponsored by Deutsche
+Forschungsgemeinschaft (DFG). 
+
+In case of questions or comments, please contact Wolfgang Maier
+(maierw@hhu.de). 
+
+.. contents::
+
+References
+==========
 
 In order to reference this parser, please cite
 
@@ -42,39 +54,38 @@ evaluation, and
 
 for parsing with a (2,2)-PLCFRS.
 
+License
+=======
+
 The code is released under the GNU General Public Licence (GPL) 2.0 or
-higher. The license text can be found in the file license.txt. The
-release include a copy of the library jgrapht, which is licensed under
-the GNU Lesser General Public License (LGPL) 2.1. The full license
-texts of the GPL 2.0 and the LGPL 2.1 can be found at 
+higher. The release include a copy of the library *jgrapht*, which is
+licensed under the GNU Lesser General Public License (LGPL) 2.1. The
+full license texts of the GPL 2.0 and the LGPL 2.1 can be found at  
 http://www.gnu.org/licenses/gpl-2.0 and
 http://www.gnu.org/licenses/old-licenses/lgpl-2.1.  
 
-This is version 2.0. For more information, update notifications and
-contact information, please refer to the rparse homepage at
-http://www.phil.hhu.de/rparse.
-
------------
 Quick Start
------------
+===========
+
 
 Compile
 -------
 
 The parser is written in Java, Java 7 is required. In order to run it,
-you need the jgrapht library. jgrapht is included with this release in
-the /lib directory. You have to compile the parser against your copy
-of jgrapht. This can be done using the ant build file included in the
-rparse package, to which you have to pass the location of the compiled
-jgrapht library as follows:  
+you need the *jgrapht* library. *jgrapht* (http://jgrapht.org) is included
+with this release in the /lib directory. You have to compile the
+parser against your copy of *jgrapht*. This can be done using the ant
+build file included in the rparse package, to which you have to pass
+the location of the compiled *jgrapht* library as follows::
 
-``$ ant -Djgraph.path="/path/to/jgrapht/"``
+  $ ant -Djgraph.path="/path/to/jgrapht"
 
 This will build a jar file rparse.jar in the rparse package. The
 classpath in the manifest of the jar file will contain the path to
 jgrapht. If you want to use a different copy of jgrapht, pass both
-jars in the class path and use the rparse entry point
-``de.tuebingen.rparse.ui.Rparse``. 
+jars in the class path and use the rparse entry point::
+
+  de.tuebingen.rparse.ui.Rparse
 
 Run
 ---
@@ -108,9 +119,10 @@ In order to evaluate your output, use::
 
 Make sure you also check the output of java -jar rparse.jar -help.
 
+Changelog
+=========
 
-New in version 2.0
-------------------
+**New in version 2.0**
 
 Fast parser for (2,2)-PLCFRS. Can be accessed via -parserType
 cyktwo. You also should use -binType optimal for obtaining a low
@@ -118,7 +130,3 @@ fan-out during binarization. Default in mode -doParse remains old
 parser (-parserType cyk). 
 
 
-New in Version 1.0.1
---------------------
-
-Several bugfixes
