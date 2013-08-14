@@ -236,7 +236,7 @@ public class Rparse {
                 "Encoding for saving grammar [UTF-8*]");
         op.add(CommandLineOption.Prefix.DASH, "binType",
                 CommandLineOption.Separator.BLANK, true,
-                "Binarization algorithm [headdriven*|km|minarvar|detlr]");
+                "Binarization algorithm [headdriven*|km|minarvar|detlr|optimal]");
         op.add(CommandLineOption.Prefix.DASH, "binParams",
                 CommandLineOption.Separator.BLANK, true,
                 "Parameter string to binarization algorithm");

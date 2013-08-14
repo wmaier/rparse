@@ -113,8 +113,9 @@ New in version 2.0
 ------------------
 
 Fast parser for (2,2)-PLCFRS. Can be accessed via -parserType
-cyktwo. Default in mode -doParse remains old parser 
-(-parserType cyk).
+cyktwo. You also should use -binType optimal for obtaining a low
+fan-out during binarization. Default in mode -doParse remains old
+parser (-parserType cyk). 
 
 
 New in Version 1.0.1
