@@ -168,6 +168,11 @@ public class Lexicon implements Serializable {
 	}
 	return -1;
     }
+    
+    public Double getScore(int word, int tag) {
+	// not yet implemented;
+	return 1.0;
+    }
 
     public Set<Integer> getOcLowerLabels() {
 	return Collections.unmodifiableSet(openClassLower.keySet());
