@@ -27,6 +27,7 @@ package de.tuebingen.rparse.grammar.write;
 import java.io.IOException;
 import java.io.Writer;
 
+import de.tuebingen.rparse.treebank.lex.Lexicon;
 import de.tuebingen.rparse.grammar.GrammarException;
 
 /**
@@ -43,13 +44,13 @@ public interface GrammarWriter<S> {
      * 
      * @param g
      *            The grammar.
-     * @param w
-     *            The writer.
+     * @param path
+     *            Where to create the output files
      * @throws IOException
      *             If there are IO problems.
      * @throws GrammarException
      *             If there is a problem with the grammar.
      */
-    public void write(S g, Writer w) throws IOException, GrammarException;
+    public void write(S g, Lexicon l, String path, String encoding) throws IOException, GrammarException;
 
 }

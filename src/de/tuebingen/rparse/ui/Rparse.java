@@ -231,6 +231,9 @@ public class Rparse {
         op.add(CommandLineOption.Prefix.DASH, "trainSave",
                 CommandLineOption.Separator.BLANK, true,
                 "Save trained grammar in directory []");
+        op.add(CommandLineOption.Prefix.DASH, "trainSaveFormat",
+                CommandLineOption.Separator.BLANK, true,
+                "Format for saved grammar []");
         op.add(CommandLineOption.Prefix.DASH, "trainSaveEncoding",
                 CommandLineOption.Separator.BLANK, true,
                 "Encoding for saving grammar [UTF-8*]");
@@ -608,6 +611,9 @@ public class Rparse {
         if (op.check("trainType"))
             trainType = op.getVal("trainType");
         String trainSave = op.getVal("trainSave");
+	String trainSaveFormat = GrammarFormats.RCG_GF;
+	if (op.check("trainSaveFormat"))
+	    trainSave = op.getVal("trainSave");
         String trainSaveEncoding = DEFAULT_ENCODING;
         String trainParams = "";
         if (op.check("trainParams"))
@@ -782,6 +788,7 @@ public class Rparse {
             logger.config("  trainParams        : " + trainParams);
             logger.config("  trainSave          : " + trainSave);
             logger.config("  trainSaveEncoding  : " + trainSaveEncoding);
+            logger.config("  trainSaveFormat    : " + trainSaveFormat);
             logger.config("  goalLabel          : " + goalLabel);
             logger.config("  binType            : " + binType);
             logger.config("  binParams          : " + binParams);
@@ -1017,7 +1024,7 @@ public class Rparse {
             if (trainCutoff > 0) {
                 // write out grammar before removing productions
                 if (trainCutoffSave != null) {
-                    String prefix = "rparse-cutoff";
+                    String prefix = "cutoff" + trainSaveFormat;
                     logger
                             .info("Writing trained unbinarized grammar and the lexicon to "
                                     + trainCutoffSave + File.separator + prefix + "* ...");
@@ -1028,13 +1035,11 @@ public class Rparse {
                             trainCutoffSaveDirectory.mkdir();
                         }
 
-                        GrammarWriter<RCG> gw = GrammarWriterFactory.getRCGWriter(GrammarFormats.RCG_RPARSE, 
+                        GrammarWriter<RCG> gw = GrammarWriterFactory.getRCGWriter(trainSaveFormat,
                                 "writehead" + ClassParameters.OPTION_SEPARATOR + "writediag" 
                                         + ClassParameters.OPTION_SEPARATOR + "writestat");
-                        String grammarPath = trainCutoffSaveDirectory.getAbsolutePath() + File.separator + prefix + ".gram";
-                        Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(grammarPath), trainSaveEncoding));
-                        gw.write(pd.g, w);
-                        w.close();
+                        String grammarPath = trainCutoffSaveDirectory.getAbsolutePath() + File.separator + prefix;
+                        gw.write(pd.g, pd.l, grammarPath, trainSaveEncoding);
                         
                         LexiconWriter lexiconWriter = new RparseLexiconWriter("");
                         lexiconWriter.write(pd, trainCutoffSaveDirectory, prefix,
@@ -1101,7 +1106,7 @@ public class Rparse {
 
             // save the unbinarized grammar
             if (trainSave != null) {
-                String prefix = "rparse";
+                String prefix = "grammar" + trainSaveFormat;
                 logger
                         .info("Writing trained unbinarized grammar and the lexicon to "
                                 + trainSave + File.separator + prefix + "* ...");
@@ -1112,13 +1117,11 @@ public class Rparse {
                         trainSaveDirectory.mkdir();
                     }
 
-                    GrammarWriter<RCG> gw = GrammarWriterFactory.getRCGWriter(GrammarFormats.RCG_RPARSE, 
+                    GrammarWriter<RCG> gw = GrammarWriterFactory.getRCGWriter(trainSaveFormat,
                             "writehead" + ClassParameters.OPTION_SEPARATOR + "writediag" 
                                     + ClassParameters.OPTION_SEPARATOR + "writestat");
-                    String grammarPath = trainSaveDirectory.getAbsolutePath() + File.separator + prefix + ".gram";
-                    Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(grammarPath), trainSaveEncoding));
-                    gw.write(pd.g, w);
-                    w.close();
+                    String grammarPath = trainSaveDirectory.getAbsolutePath() + File.separator + prefix;
+                    gw.write(pd.g, pd.l, grammarPath, trainSaveEncoding);
                     
                     LexiconWriter lexiconWriter = new RparseLexiconWriter("");
                     lexiconWriter.write(pd, trainSaveDirectory, prefix,
@@ -1199,12 +1202,8 @@ public class Rparse {
                     logger.info("Writing binarized grammar to " + binSave
                             + "...");
                     try {
-                        BufferedWriter w = new BufferedWriter(
-                                new OutputStreamWriter(new FileOutputStream(
-                                        new File(binSave)), binSaveEncoding));
                         GrammarWriter<BinaryRCG> gw = GrammarWriterFactory.getBinaryRCGWriter(GrammarFormats.BINARYRCG_RPARSE);
-                        gw.write(pd.bg, w);
-                        w.close();
+                        gw.write(pd.bg, pd.l, binSave, binSaveEncoding);
                     } catch (IOException e) {
                         logger.warning("IO Exception while writing grammar: "
                                 + e.getMessage() + "\n");

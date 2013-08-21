@@ -26,9 +26,13 @@ package de.tuebingen.rparse.grammar.write;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
 
 import de.tuebingen.rparse.grammar.Clause;
 import de.tuebingen.rparse.grammar.RCG;
+import de.tuebingen.rparse.treebank.lex.Lexicon;
 import de.tuebingen.rparse.misc.ClassParameters;
 import de.tuebingen.rparse.misc.HasParameters;
 import de.tuebingen.rparse.misc.ParameterException;
@@ -70,7 +74,8 @@ public class RCGWriterRparse implements GrammarWriter<RCG>, HasParameters {
     }
 
     @Override
-    public void write(RCG g, Writer w) throws IOException {// File d, String pref, String encoding) throws IOException {
+	public void write(RCG g, Lexicon lex, String grammarPath, String encoding) throws IOException {// File d, String pref, String encoding) throws IOException {
+	Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(grammarPath), encoding));
         for (Integer labeln : g.getClausesByLhsLabel().keySet()) {
             for (Clause c : g.getClausesByLhsLabel().get(labeln)) {
                 if (writeHead) {
