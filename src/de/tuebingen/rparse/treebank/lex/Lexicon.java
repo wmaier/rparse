@@ -49,6 +49,10 @@ public class Lexicon implements Serializable {
 	
     private Map<Integer, Integer> tagCounts;
     
+    private Map<Integer, Map<Integer,Integer>> wordTagCounts;
+
+    private Map<Integer, Integer> wordCounts;
+    
     private Set<Integer> preterminals;
     
     private Map<Integer,Integer> openClassLower;
@@ -67,6 +71,8 @@ public class Lexicon implements Serializable {
         wordToTag = new HashMap<Integer, Map<Integer,Integer>>();
 	tagToWord = new HashMap<Integer, Set<Integer>>();
         tagCounts = new HashMap<Integer, Integer>();
+        wordTagCounts = new HashMap<Integer, Map<Integer,Integer>>();
+	wordCounts = new HashMap<Integer, Integer>();
         preterminals = new HashSet<Integer>();
         openClassLower = new HashMap<Integer,Integer>();
         openClassUpper = new HashMap<Integer,Integer>();
@@ -85,6 +91,18 @@ public class Lexicon implements Serializable {
         if (!tagCounts.containsKey(tnum))
             tagCounts.put(tnum, 0);
         tagCounts.put(tnum, tagCounts.get(tnum) + 1);
+
+	if (!wordCounts.containsKey(wnum))
+	    wordCounts.put(wnum, 0);
+	wordCounts.put(wnum, wordCounts.get(wnum) + 1);
+
+	if (!wordTagCounts.containsKey(wnum)) {
+	    wordTagCounts.put(wnum, new HashMap<Integer,Integer>());
+	}
+	if (!wordTagCounts.get(wnum).containsKey(tnum)) {
+	    wordTagCounts.get(wnum).put(tnum, 0);
+	}
+	wordTagCounts.get(wnum).put(tnum, wordTagCounts.get(wnum).get(tnum) + 1);
 
         if (!wordToTag.containsKey(wnum))
             wordToTag.put(wnum, new HashMap<Integer,Integer>());
@@ -122,7 +140,7 @@ public class Lexicon implements Serializable {
     @Override
 	public String toString() {
         String ret = "";
-        for (Integer i : wordToTag.keySet()) {
+        for (int i : wordToTag.keySet()) {
             ret += (String) nb.getObjectWithId(LexiconConstants.LEXWORD, i) + "\t";
             for (Integer j : wordToTag.keySet())
                 ret += (String) nb.getObjectWithId(GrammarConstants.PREDLABEL, j) + " ";
@@ -168,10 +186,19 @@ public class Lexicon implements Serializable {
 	}
 	return -1;
     }
-    
+
+    public int getWordCounter(int word) {
+	int result = -1;
+	if (wordToTag.containsKey(word)) {
+	    for (int tag : wordToTag.get(word).keySet()) {
+		result += wordToTag.get(word).get(tag);
+	    }
+	}
+	return result;
+    }
+
     public Double getScore(int word, int tag) {
-	// not yet implemented;
-	return 1.0;
+	return wordTagCounts.get(word).get(tag) / new Double(wordCounts.get(word));
     }
 
     public Set<Integer> getOcLowerLabels() {
