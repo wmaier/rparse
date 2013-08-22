@@ -237,6 +237,9 @@ public class Rparse {
         op.add(CommandLineOption.Prefix.DASH, "trainSaveEncoding",
                 CommandLineOption.Separator.BLANK, true,
                 "Encoding for saving grammar [UTF-8*]");
+        op.add(CommandLineOption.Prefix.DASH, "trainExtractOnly",
+                CommandLineOption.Separator.BLANK, false,
+                "Stop after extraction [false]");
         op.add(CommandLineOption.Prefix.DASH, "binType",
                 CommandLineOption.Separator.BLANK, true,
                 "Binarization algorithm [headdriven*|km|minarvar|detlr|optimal]");
@@ -614,12 +617,13 @@ public class Rparse {
 	String trainSaveFormat = GrammarFormats.RCG_GF;
 	if (op.check("trainSaveFormat"))
 	    trainSave = op.getVal("trainSave");
-        String trainSaveEncoding = DEFAULT_ENCODING;
         String trainParams = "";
         if (op.check("trainParams"))
             trainParams = op.getVal("trainParams");
+        String trainSaveEncoding = DEFAULT_ENCODING;
         if (op.check("trainSaveEncoding"))
             trainSaveEncoding = op.getVal("trainSaveEncoding");
+	boolean trainExtractOnly = op.check("trainExtractOnly");
         String binType = BinarizerTypes.HEADDRIVEN;
         if (op.check("binType"))
             binType = op.getVal("binType");
@@ -789,6 +793,7 @@ public class Rparse {
             logger.config("  trainSave          : " + trainSave);
             logger.config("  trainSaveEncoding  : " + trainSaveEncoding);
             logger.config("  trainSaveFormat    : " + trainSaveFormat);
+            logger.config("  trainExtractOnly   : " + trainExtractOnly);
             logger.config("  goalLabel          : " + goalLabel);
             logger.config("  binType            : " + binType);
             logger.config("  binParams          : " + binParams);
@@ -1140,6 +1145,10 @@ public class Rparse {
                 }
                 logger.info("finished.");                
             }
+
+	    if (trainExtractOnly) {
+		System.exit(0);
+	    }
             
             if (doBinarization) {
                 // binarization
