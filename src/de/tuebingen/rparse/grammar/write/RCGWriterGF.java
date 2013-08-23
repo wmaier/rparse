@@ -24,21 +24,20 @@
  ******************************************************************************/
 package de.tuebingen.rparse.grammar.write;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
-import java.io.File;
-import java.util.List;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
 
 import de.tuebingen.rparse.grammar.Clause;
-import de.tuebingen.rparse.grammar.RCG;
 import de.tuebingen.rparse.grammar.GrammarConstants;
+import de.tuebingen.rparse.grammar.RCG;
+import de.tuebingen.rparse.misc.Numberer;
 import de.tuebingen.rparse.treebank.lex.Lexicon;
 import de.tuebingen.rparse.treebank.lex.LexiconConstants;
-import de.tuebingen.rparse.misc.Numberer;
 
 /**
  * Write out an RCG without diagnostic fields in Grammatical Framework format
@@ -180,7 +179,6 @@ public class RCGWriterGF implements GrammarWriter<RCG> {
                 probw.write(funName + " " + c.getScore() + "\n");
 		
 		// concrete lincat + abstract cat
-		String lincat = "";
 		if (!declared.contains(lhs)) {
 		    declared.add(lhs);
 		    abstractw.write("cat " + lhs + " ;\n");

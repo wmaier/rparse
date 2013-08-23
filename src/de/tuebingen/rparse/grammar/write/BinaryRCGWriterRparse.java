@@ -44,14 +44,14 @@ import de.tuebingen.rparse.treebank.lex.Lexicon;
 public class BinaryRCGWriterRparse implements GrammarWriter<BinaryRCG> {
 
     @Override
-	public void write(BinaryRCG g, Lexicon lex, String grammarPath, String encoding) throws IOException,
-            GrammarException {
-	Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(grammarPath), encoding));
-        for (Integer labeln : g.clByParent.keySet()) {
-            for (BinaryClause c : g.clByParent.get(labeln)) {
-                w.write(g.cnt.get(c) + " " + c + "\n");
-            }
-        }
+    public void write(BinaryRCG g, Lexicon lex, String grammarPath, String encoding) throws IOException,
+    GrammarException {
+    	Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(grammarPath), encoding));
+    	for (Integer labeln : g.clByParent.keySet()) {
+    		for (BinaryClause c : g.clByParent.get(labeln)) {
+    			w.write(g.cnt.get(c) + " " + c + "\n");
+    		}
+    	}
+    	w.close();
     }
-
 }

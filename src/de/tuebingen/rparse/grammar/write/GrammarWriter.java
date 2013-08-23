@@ -25,10 +25,9 @@
 package de.tuebingen.rparse.grammar.write;
 
 import java.io.IOException;
-import java.io.Writer;
 
-import de.tuebingen.rparse.treebank.lex.Lexicon;
 import de.tuebingen.rparse.grammar.GrammarException;
+import de.tuebingen.rparse.treebank.lex.Lexicon;
 
 /**
  * An interface for grammar writing.
