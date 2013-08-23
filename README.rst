@@ -129,4 +129,3 @@ cyktwo. You also should use -binType optimal for obtaining a low
 fan-out during binarization. Default in mode -doParse remains old
 parser (-parserType cyk). 
 
-
