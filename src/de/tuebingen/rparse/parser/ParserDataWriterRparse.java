@@ -24,12 +24,8 @@
  ******************************************************************************/
 package de.tuebingen.rparse.parser;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 
 import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.grammar.RCG;
@@ -69,9 +65,7 @@ public class ParserDataWriterRparse implements ParserDataWriter {
                     + ".gram";
             GrammarWriter<RCG> gw = GrammarWriterFactory.getRCGWriter(
                     GrammarFormats.RCG_RPARSE, options);
-            Writer w = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(grammarPath), encoding));
-            gw.write(pd.g, w);
+            gw.write(pd.g, pd.l, grammarPath, encoding);
             LexiconWriter lw = LexiconWriterFactory.getWriter(
                     LexiconFormats.RPARSE, options);
             lw.write(pd, d, pref, encoding);
