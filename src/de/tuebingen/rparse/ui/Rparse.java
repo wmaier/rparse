@@ -293,7 +293,7 @@ public class Rparse {
 				CommandLineOption.Separator.BLANK, true,
 				"Test data format [rparse-tagged*], try -availableTestFormats");
 		op.add(CommandLineOption.Prefix.DASH, "availableTestFormats",
-				CommandLineOption.Separator.BLANK, true,
+				CommandLineOption.Separator.BLANK, false,
 				"Show available formats and exit");
 		op.add(CommandLineOption.Prefix.DASH, "testEncoding",
 				CommandLineOption.Separator.BLANK, true,
