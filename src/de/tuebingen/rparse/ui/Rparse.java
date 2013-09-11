@@ -224,7 +224,7 @@ public class Rparse {
 				"Save trained grammar in directory []");
 		op.add(CommandLineOption.Prefix.DASH, "trainSaveFormat",
 				CommandLineOption.Separator.BLANK, true,
-				"Format for saved grammar []");
+				"Format for saved grammar [gf*|rcg]");
 		op.add(CommandLineOption.Prefix.DASH, "trainSaveEncoding",
 				CommandLineOption.Separator.BLANK, true,
 				"Encoding for saving grammar [UTF-8*]");
@@ -240,6 +240,9 @@ public class Rparse {
 		op.add(CommandLineOption.Prefix.DASH, "binSave",
 				CommandLineOption.Separator.BLANK, true,
 				"Save binarized grammar []");
+		op.add(CommandLineOption.Prefix.DASH, "binSaveFormat",
+				CommandLineOption.Separator.BLANK, true,
+				"Format for saved binarized grammar [gf*|rcg]");
 		op.add(CommandLineOption.Prefix.DASH, "binSaveEncoding",
 				CommandLineOption.Separator.BLANK, true,
 				"Encoding for saving binarized grammar [UTF-8*]");
@@ -617,6 +620,9 @@ public class Rparse {
 			binParams = op.getVal("binParams");
 		boolean doBinarization = binType != null && binType.length() > 0;
 		String binSave = op.getVal("binSave");
+		String binSaveFormat = GrammarFormats.RCG_GF;
+		if (op.check("binSaveFormat")) 
+			binSaveFormat = op.getVal("binSaveFormat");
 		String binSaveEncoding = DEFAULT_ENCODING;
 		if (op.check("binSaveEncoding"))
 			binSaveEncoding = op.getVal("binSaveEncoding");
@@ -778,6 +784,7 @@ public class Rparse {
 			logger.config("  binType            : " + binType);
 			logger.config("  binParams          : " + binParams);
 			logger.config("  binSave            : " + binSave);
+			logger.config("  binSaveFormat      : " + binSaveFormat);
 			logger.config("  binSaveEncoding    : " + binSaveEncoding);
 			logger.config("  headFinder         : " + headFinder);
 			logger.config("  vMarkov            : " + vMarkov);
@@ -1181,18 +1188,25 @@ public class Rparse {
 
 				// write binarized grammar
 				if (binSave != null) {
-					logger.info("Writing binarized grammar to " + binSave
-							+ "...");
+					String prefix = "bingrammar" + binSaveFormat;
+					logger.info("Writing binarized grammar to " + binSave + File.separator + prefix + "* ...");
 					try {
-						GrammarWriter<BinaryRCG> gw = GrammarWriterFactory
-								.getBinaryRCGWriter(GrammarFormats.BINARYRCG_RPARSE);
-						gw.write(pd.bg, pd.l, binSave, binSaveEncoding);
+						File binSaveDirectory = new File(binSave);
+						if (!binSaveDirectory.exists()) {
+							binSaveDirectory.mkdir();
+						}
+						GrammarWriter<BinaryRCG> gw = GrammarWriterFactory.getBinaryRCGWriter(binSaveFormat);
+						String grammarPath = binSaveDirectory.getAbsolutePath() + File.separator + prefix;
+						gw.write(pd.bg, pd.l, grammarPath, binSaveEncoding);
 					} catch (IOException e) {
 						logger.warning("IO Exception while writing grammar: "
 								+ e.getMessage() + "\n");
 					} catch (GrammarException e) {
 						logger.warning("Exception while writing grammar: "
 								+ e.getMessage() + "\n");
+					} catch (UnknownFormatException e) {
+						logger.warning("Unknown grammar format requested: "
+								+ e.getMessage());
 					}
 					logger.info("finished.");
 				}

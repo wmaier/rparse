@@ -81,13 +81,17 @@ public class GrammarWriterFactory {
      *             If something is wrong with the grammar, or writer cannot be created.
      */
     public static GrammarWriter<BinaryRCG> getBinaryRCGWriter(String format)
-            throws GrammarException {
+            throws GrammarException, UnknownFormatException {
 
-        if (GrammarFormats.BINARYRCG_RPARSE.equals(format)) {
+        if (GrammarFormats.RCG_RPARSE.equals(format)) {
             return new BinaryRCGWriterRparse();
         }
 
-        throw new GrammarException("Unknown binary grammar format " + format);
+        if (GrammarFormats.RCG_GF.equals(format)) {
+            return new BinaryRCGWriterGF();
+        }
+
+        throw new UnknownFormatException("Unknown binary grammar format " + format);
 
     }
 
