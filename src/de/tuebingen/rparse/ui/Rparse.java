@@ -293,7 +293,7 @@ public class Rparse {
 				CommandLineOption.Separator.BLANK, true,
 				"Test data format [rparse-tagged*], try -availableTestFormats");
 		op.add(CommandLineOption.Prefix.DASH, "availableTestFormats",
-				CommandLineOption.Separator.BLANK, true,
+				CommandLineOption.Separator.BLANK, false,
 				"Show available formats and exit");
 		op.add(CommandLineOption.Prefix.DASH, "testEncoding",
 				CommandLineOption.Separator.BLANK, true,
@@ -531,9 +531,11 @@ public class Rparse {
 			System.exit(0);
 		}
 		if (op.check("availableTestFormats")) {
-			System.out
-					.println("Accepted unparsed input is one terminal/POS tag combination per line,\n separated by a slash."
-							+ "The last slash counts.");
+			System.out.println("[rparse-tagged] Accepted unparsed input is one terminal/POS tag combination per line,\n" +
+                               "    separated by a slash. The last slash counts.\n" +
+                               "[export] NeGra export format (see Skut et al. (1997)).\n" +
+                               "[mrg] Any bracketed format like Penn Treebank MRG, >= 1 lines per sentences.\n" +
+                               "[treetagger] TreeTagger output format.");
 			System.exit(0);
 		}
 		if (op.check("availableEvalFormats")) {
