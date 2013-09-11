@@ -41,9 +41,4 @@ public interface GrammarFormats {
      */ 
     public static final String RCG_GF           = "gf";
 
-    /**
-     * Our in-house format for binary RCGs
-     */
-    public static final String BINARYRCG_RPARSE = "binaryrcg";
-
 }
