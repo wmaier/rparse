@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.TimeoutException;
 
 import de.tuebingen.rparse.grammar.GrammarConstants;
 import de.tuebingen.rparse.grammar.GrammarException;
@@ -90,6 +91,9 @@ public class CYKParserTwo implements RCGParser {
 
 	// write result (dependencies)
 	private SentenceWriter<DependencyForest<DependencyForestNodeLabel, String>> dw;
+
+    // timeout in nanoseconds (inactive if <= 0)
+    private long timeout;
 
 	// the numberer
 	private final Numberer nb;
@@ -153,19 +157,37 @@ public class CYKParserTwo implements RCGParser {
 		}
 	}
 
+    @Override
+    public boolean parse(ParserInput pi) {
+        try {
+            return parseWithTimeout(pi, 0);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 	@Override
-	public boolean parse(ParserInput pi) {
-		this.words = pi.getWords();
-		doParse(words, pi.getTags());
-		if (goal != null)
-			System.err.println(goal);
-		System.err.println("chart size: " + chart.size());
-		return goal != null;
-	}
+    public boolean parseWithTimeout(ParserInput pi, int timeout) throws TimeoutException {
+        this.words = pi.getWords();
+        try {
+            doParse(words, pi.getTags(), timeout);
+        } finally {
+            if (goal != null)
+                System.err.println(goal);
+            System.err.println("chart size: " + chart.size());
+        }
+        return goal != null;
+    }
 
 	public static int UNSET = -1;
 
-	public boolean doParse(int[] words, int[] tags) {
+    /**
+     * @param words input words
+     * @param tags input tags
+     * @param timeout timeout in seconds, parse indefinitely if timeout == 0
+     * @return true if there is a parse. the goal item is stored in the corresponding field.
+     */
+	public boolean doParse(int[] words, int[] tags, int timeout) throws TimeoutException {
 		CYKItemTwo item;
 		for (int i = 0; i < tags.length; ++i) {
 			item = new CYKItemTwo(tags[i], 1, 0.0, null, null, i, i + 1, UNSET,
@@ -179,7 +201,13 @@ public class CYKParserTwo implements RCGParser {
 		CYKItemTwo nit = null;
 
 		// boolean cont = false;
+        long starttime = System.nanoTime();
+        long nanotimeout = 1000000000L * timeout;
 		while (!agenda.isEmpty()) {
+            if (nanotimeout > 0 && System.nanoTime() - starttime > nanotimeout) {
+                throw new TimeoutException();
+            }
+
 			item = agenda.poll();
 			chart.add(item);
 
