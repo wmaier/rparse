@@ -44,6 +44,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.TimeoutException;
 
 import de.tuebingen.rparse.eval.EvalConnector;
 import de.tuebingen.rparse.eval.EvalException;
@@ -281,6 +282,9 @@ public class Rparse {
 		op.add(CommandLineOption.Prefix.DASH, "doParse",
 				CommandLineOption.Separator.BLANK, false,
 				"Parsing mode [true|false*]");
+		op.add(CommandLineOption.Prefix.DASH, "timeout",
+				CommandLineOption.Separator.BLANK, true,
+				"Timeout in seconds until the parsing thread is killed [0*, 1-...]");
 		op.add(CommandLineOption.Prefix.DASH, "yfComp",
 				CommandLineOption.Separator.BLANK, true,
 				"Yield function composer [classic|fast*|gaps]");
@@ -653,6 +657,9 @@ public class Rparse {
 		String saveEstimate = op.getVal("saveEstimate");
 		String saveModel = op.getVal("saveModel");
 		boolean doParse = op.check("doParse");
+		int timeout = 0;
+		if (op.check("timeout")) 
+			timeout = Integer.parseInt(op.getVal("timeout"));
 		String parserType = ParsingTypes.RCG_CYK_FIBO;
 		if (op.check("parserType"))
 			parserType = op.getVal("parserType");
@@ -800,6 +807,7 @@ public class Rparse {
 		if (doParse) {
 			logger.config("***** T e s t i n g ************");
 			logger.config("  test            : " + test);
+			logger.config("  timeout         : " + timeout);
 			logger.config("  readModel       : " + readModel);
 			logger.config("  parserType      : " + parserType);
 			logger.config("  yfComp          : " + yfcomp);
@@ -1462,26 +1470,29 @@ public class Rparse {
 
 				// Parse if not too long:
 				int size = input.size();
+                
+                if (size <= testMaxlen && size >= testMinlen) {
+                    logger.info("Parsing " + input.parserInputPrint(pd.nb) + "...");
+                    timer.start();
+                    try {
+                        boolean result = false;
+                        try {
+                            result = theParser.parseWithTimeout(input, timeout);
+                        } catch (TimeoutException e) {
+                            logger.warning(" **** TIMEOUT **** ");
+                        }
 
-				if (size <= testMaxlen && size >= testMinlen) {
-					logger.info("Parsing " + input.parserInputPrint(pd.nb)
-							+ "...");
-					timer.start();
-					try {
-						if (theParser.parse(input)) {
+						if (result) {
 							try {
 								if (Constants.DEPENDENCIES.equals(mode)) {
-									theParser.writeDependencyResult(
-											parseResultWriter, sentenceNumber,
-											dependencyPostProcessingTasks);
+									theParser.writeDependencyResult(parseResultWriter, sentenceNumber,
+                                                                    dependencyPostProcessingTasks);
 								} else {
-									theParser.writeResult(parseResultWriter,
-											sentenceNumber,
-											constituentPostprocessingTasks);
+									theParser.writeResult(parseResultWriter, sentenceNumber,
+                                                          constituentPostprocessingTasks);
 								}
 							} catch (TreebankException e) {
-								logger.severe("Could not write result due to error in postprocessing: "
-										+ e.getMessage());
+								logger.severe("Could not write result due to error in postprocessing: " + e.getMessage());
 								e.printStackTrace();
 								parseResultWriter.close();
 								System.exit(-1);
@@ -1490,12 +1501,10 @@ public class Rparse {
 						} else {
 							logger.info(theParser.getStats());
 							logger.info("\n ***************** No parse found");
-							parseResultWriter.write("\n\n ***************** "
-									+ sentenceNumber + ": No parse found \n\n");
+							parseResultWriter.write("\n\n ***************** " + sentenceNumber + ": No parse found \n\n");
 						}
 					} catch (IOException e) {
-						logger.warning("Could not write parsing result for "
-								+ sentenceNumber + ": " + e.getMessage());
+						logger.warning("Could not write parsing result for " + sentenceNumber + ": " + e.getMessage());
 					}
 
 					logger.info("finished in " + timer.time());

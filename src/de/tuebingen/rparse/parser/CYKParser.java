@@ -33,6 +33,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.TimeoutException;
 
 import de.tuebingen.rparse.grammar.BinaryClause;
 import de.tuebingen.rparse.grammar.GrammarConstants;
@@ -227,14 +228,26 @@ public class CYKParser implements RCGParser {
 
     @Override
     public boolean parse(ParserInput pi) {
+        try {
+            return parseWithTimeout(pi, 0);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+	@Override
+    public boolean parseWithTimeout(ParserInput pi, int timeout) throws TimeoutException {
         this.words = pi.getWords();
-        if (deterministicBinarization && pd.doFilter)
-            doParseDeterministicFilters(words, pi.getTags(), pi.tagsAsSet());
-        else
-            doParse(words, pi.getTags());
-        if (goal != null)
-            System.err.println(goal);
-        System.err.println("chart size: " + chart.values().size());
+        try {
+            if (deterministicBinarization && pd.doFilter)
+                doParseDeterministicFilters(words, pi.getTags(), pi.tagsAsSet(), timeout);
+            else
+                doParse(words, pi.getTags(), timeout);
+        } finally {
+            if (goal != null)
+                System.err.println(goal);
+            System.err.println("chart size: " + chart.values().size());
+        }
         return goal != null;
     }
 
@@ -242,9 +255,10 @@ public class CYKParser implements RCGParser {
      * Do weighted deductive parsing
      * @param words input words
      * @param tags input tags
+     * @param timeout timeout in seconds, parse indefinitely if timeout == 0
      * @return true if there is a parse. the goal item is stored in the corresponding field.
      */
-    public boolean doParse(int[] words, int[] tags) {
+    public boolean doParse(int[] words, int[] tags, int timeout) throws TimeoutException {
 
         CYKItem item;
         for (int i = 0; i < tags.length; ++i) {
@@ -263,8 +277,14 @@ public class CYKParser implements RCGParser {
         IntegerContainer end = new IntegerContainer(-1);
         CYKItem nit = null;
 
-        // boolean cont = false;
-        while (!agenda.isEmpty()) {
+		// boolean cont = false;
+        long starttime = System.nanoTime();
+        long nanotimeout = 1000000000L * timeout;
+		while (!agenda.isEmpty()) {
+            if (nanotimeout > 0 && System.nanoTime() - starttime > nanotimeout) {
+                throw new TimeoutException();
+            }
+
             item = agenda.poll();
             chart.add(item);
 
@@ -416,10 +436,12 @@ public class CYKParser implements RCGParser {
      *            The input tags as integers, backed by the numberer in the ParserData.
      * @param tagset
      *            The complete set of POS tags from the training set.
+     * @param timeout 
+     *            The timeout in seconds. Parse indefinitely if timeout == 0.
      * @return true if there is a parse.
      */
-    public boolean doParseDeterministicFilters(int[] words, int[] tags,
-            Set<Integer> tagset) {
+    public boolean doParseDeterministicFilters(int[] words, int[] tags, Set<Integer> tagset, int timeout) 
+        throws TimeoutException {
 
         CYKItem item;
         // scan: One item for every input word, resp. tag.
@@ -446,7 +468,13 @@ public class CYKParser implements RCGParser {
         boolean cont = false;
 
         // Weighted Deductive Parsing
-        while (!agenda.isEmpty()) {
+        long starttime = System.nanoTime();
+        long nanotimeout = 1000000000L * timeout;
+		while (!agenda.isEmpty()) {
+            if (nanotimeout > 0 && System.nanoTime() - starttime > nanotimeout) {
+                throw new TimeoutException();
+            }
+
             // get an item and put in the agenda.
             item = agenda.poll();
             chart.add(item);
