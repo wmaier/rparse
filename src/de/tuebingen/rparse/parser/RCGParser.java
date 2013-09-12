@@ -26,6 +26,7 @@ package de.tuebingen.rparse.parser;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.TimeoutException;
 
 import de.tuebingen.rparse.treebank.ProcessingTask;
 import de.tuebingen.rparse.treebank.TreebankException;
@@ -50,6 +51,11 @@ public interface RCGParser {
      * @return true if there is a parse
      */
     public boolean parse(ParserInput parserInput);
+
+    /**
+     * Parse a sentence within a number of seconds
+     */
+    public boolean parseWithTimeout(ParserInput parserInput, int seconds) throws TimeoutException;
 
     /**
      * Reset the parser after parsing a sentence.
