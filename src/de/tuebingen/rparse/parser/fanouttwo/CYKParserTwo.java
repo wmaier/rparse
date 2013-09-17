@@ -92,8 +92,8 @@ public class CYKParserTwo implements RCGParser {
 	// write result (dependencies)
 	private SentenceWriter<DependencyForest<DependencyForestNodeLabel, String>> dw;
 
-    // timeout in nanoseconds (inactive if <= 0)
-    private long timeout;
+	// timeout in nanoseconds (inactive if <= 0)
+	private long timeout;
 
 	// the numberer
 	private final Numberer nb;
@@ -157,37 +157,43 @@ public class CYKParserTwo implements RCGParser {
 		}
 	}
 
-    @Override
-    public boolean parse(ParserInput pi) {
-        try {
-            return parseWithTimeout(pi, 0);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-    }
+	@Override
+	public boolean parse(ParserInput pi) {
+		try {
+			return parseWithTimeout(pi, 0);
+		} catch (TimeoutException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	@Override
-    public boolean parseWithTimeout(ParserInput pi, int timeout) throws TimeoutException {
-        this.words = pi.getWords();
-        try {
-            doParse(words, pi.getTags(), timeout);
-        } finally {
-            if (goal != null)
-                System.err.println(goal);
-            System.err.println("chart size: " + chart.size());
-        }
-        return goal != null;
-    }
+	public boolean parseWithTimeout(ParserInput pi, int timeout)
+			throws TimeoutException {
+		this.words = pi.getWords();
+		try {
+			doParse(words, pi.getTags(), timeout);
+		} finally {
+			if (goal != null)
+				System.err.println(goal);
+			System.err.println("chart size: " + chart.size());
+		}
+		return goal != null;
+	}
 
 	public static int UNSET = -1;
 
-    /**
-     * @param words input words
-     * @param tags input tags
-     * @param timeout timeout in seconds, parse indefinitely if timeout == 0
-     * @return true if there is a parse. the goal item is stored in the corresponding field.
-     */
-	public boolean doParse(int[] words, int[] tags, int timeout) throws TimeoutException {
+	/**
+	 * @param words
+	 *            input words
+	 * @param tags
+	 *            input tags
+	 * @param timeout
+	 *            timeout in seconds, parse indefinitely if timeout == 0
+	 * @return true if there is a parse. the goal item is stored in the
+	 *         corresponding field.
+	 */
+	public boolean doParse(int[] words, int[] tags, int timeout)
+			throws TimeoutException {
 		CYKItemTwo item;
 		for (int i = 0; i < tags.length; ++i) {
 			item = new CYKItemTwo(tags[i], 1, 0.0, null, null, i, i + 1, UNSET,
@@ -201,12 +207,12 @@ public class CYKParserTwo implements RCGParser {
 		CYKItemTwo nit = null;
 
 		// boolean cont = false;
-        long starttime = System.nanoTime();
-        long nanotimeout = 1000000000L * timeout;
+		long starttime = System.nanoTime();
+		long nanotimeout = 1000000000L * timeout;
 		while (!agenda.isEmpty()) {
-            if (nanotimeout > 0 && System.nanoTime() - starttime > nanotimeout) {
-                throw new TimeoutException();
-            }
+			if (nanotimeout > 0 && System.nanoTime() - starttime > nanotimeout) {
+				throw new TimeoutException();
+			}
 
 			item = agenda.poll();
 			chart.add(item);
@@ -863,35 +869,30 @@ public class CYKParserTwo implements RCGParser {
 							if (!item.isOne()) {
 								for (int xl : chart.charttwo.get(bc.lc)
 										.keySet()) {
+									int xr = item.ll; // because item.ll is Y.l
+														// and Y.l = X.r
 									if (chart.charttwo.get(bc.lc).get(xl)
-											.containsKey(item.ll)) {
-										for (int zl : chart.charttwo.get(bc.lc)
-												.get(xl).get(item.ll).keySet()) {
-											if (chart.charttwo.get(bc.lc)
-													.get(xl).get(item.ll)
-													.get(zl)
-													.containsKey(item.rl)) {
-												for (int zr : chart.charttwo
+											.containsKey(xr)) {
+										int ul = item.rr; // because item.rr is
+															// Z.r and Z.r = U.l
+										if (chart.charttwo.get(bc.lc).get(xl)
+												.get(xr).containsKey(ul)) {
+											for (int ur : chart.charttwo
+													.get(bc.lc).get(xl).get(xr)
+													.get(ul).keySet()) {
+												CYKItemTwo candit = chart.charttwo
 														.get(bc.lc).get(xl)
-														.get(item.ll)
-														.get(item.rl).keySet()) {
-													CYKItemTwo candit = chart.charttwo
-															.get(bc.lc).get(xl)
-															.get(item.ll)
-															.get(item.rl)
-															.get(zr);
-													nit = new CYKItemTwo(
-															bc.lhs,
-															2,
-															item.iscore
-																	+ candit.iscore
-																	+ bc.score,
-															candit, item,
-															candit.ll, item.lr,
-															item.rl, candit.rr,
-															"r11");
-													transport.add(nit);
-												}
+														.get(xr).get(ul)
+														.get(ur);
+												nit = new CYKItemTwo(bc.lhs, 2,
+														item.iscore
+																+ candit.iscore
+																+ bc.score,
+														candit, item,
+														candit.ll, item.lr,
+														item.rl, candit.rr,
+														"r11");
+												transport.add(nit);
 											}
 										}
 									}
