@@ -94,6 +94,10 @@ public class GrammarWriterFactory {
         if (GrammarFormats.RCG_GF.equals(format)) {
             return new BinaryRCGWriterGF();
         }
+        
+        if (GrammarFormats.RCG_PMCFG.equals(format)) {
+        	return new BinaryRCGWriterPMCFG();
+        }
 
         throw new UnknownFormatException("Unknown binary grammar format " + format);
 
