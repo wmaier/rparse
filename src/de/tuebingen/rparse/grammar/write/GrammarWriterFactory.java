@@ -67,6 +67,10 @@ public class GrammarWriterFactory {
         if (GrammarFormats.RCG_GF.equals(format)) {
             return new RCGWriterGF();
         }
+        
+        if (GrammarFormats.RCG_PMCFG.equals(format)) {
+        	return new RCGWriterPMCFG();
+        }
 
         throw new UnknownFormatException(format);
     }

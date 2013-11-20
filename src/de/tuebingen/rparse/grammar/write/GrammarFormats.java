@@ -41,4 +41,9 @@ public interface GrammarFormats {
      */ 
     public static final String RCG_GF           = "gf";
 
+    /**
+     * PMCFG format
+     */
+	public static final String RCG_PMCFG = "pmcfg";
+
 }

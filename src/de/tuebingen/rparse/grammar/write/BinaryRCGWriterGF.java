@@ -24,18 +24,17 @@
  ******************************************************************************/
 package de.tuebingen.rparse.grammar.write;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
-import java.util.Set;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.HashSet;
+import java.util.Set;
 
 import de.tuebingen.rparse.grammar.BinaryClause;
 import de.tuebingen.rparse.grammar.BinaryRCG;
 import de.tuebingen.rparse.grammar.GrammarConstants;
-import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.treebank.lex.Lexicon;
 import de.tuebingen.rparse.treebank.lex.LexiconConstants;
 
