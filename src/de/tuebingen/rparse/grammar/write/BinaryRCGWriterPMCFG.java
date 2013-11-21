@@ -29,15 +29,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import de.tuebingen.rparse.grammar.BinaryClause;
 import de.tuebingen.rparse.grammar.BinaryRCG;
 import de.tuebingen.rparse.grammar.GrammarConstants;
 import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.misc.Numberer;
-import de.tuebingen.rparse.misc.Utilities;
 import de.tuebingen.rparse.treebank.lex.Lexicon;
-import de.tuebingen.rparse.treebank.lex.LexiconConstants;
 
 /**
  * Writes out a binary RCG in PMCFG format
@@ -45,33 +49,62 @@ import de.tuebingen.rparse.treebank.lex.LexiconConstants;
  * @author wmaier
  */
 public class BinaryRCGWriterPMCFG implements GrammarWriter<BinaryRCG> {
+	
+	private class Rule {
+		
+		String lhs;
+		
+		String[] rhs;
+		
+		int[] lin;
+		
+	}
 
-	private String clauseToString(BinaryClause c, Numberer nb) {
+	private int linid;
+	
+	private Rule parseClause(BinaryClause c, Numberer nb) {
     	// NP.sg <- Det.sg CN.sg = [0:2 "token" 1:1] [2:0 "token" 1:0]
-		String result = (String) nb.getObjectWithId(GrammarConstants.PREDLABEL, c.lhs);
-		result += " <- ";
-		result += (String) nb.getObjectWithId(GrammarConstants.PREDLABEL, c.lc);
-		result += " ";
-		result += (String) nb.getObjectWithId(GrammarConstants.PREDLABEL, c.rc);
-		result += " = ";
+		Rule r = new Rule();
+		r.lhs = (String) nb.getObjectWithId(GrammarConstants.PREDLABEL, c.lhs);
+		r.rhs = c.rc == -1 ? new String[1] : new String[2];
+		r.rhs[0] = (String) nb.getObjectWithId(GrammarConstants.PREDLABEL, c.lc);
+		if (c.rc != -1) {
+			r.rhs[1] = (String) nb.getObjectWithId(GrammarConstants.PREDLABEL, c.rc);
+		}
 		int lccnt = 0;
 		int rccnt = 0;
+		r.lin = new int[c.yf.length];
+		String lin = "";
 		for (int i = 0; i < c.yf.length; ++i) {
-			result += "[";
 			for (int j = 0; j < c.yf[i].length; ++j) {
-				result += (c.yf[i][j] ? 1 : 0)  
+				lin += (c.yf[i][j] ? 1 : 0)  
 						+ ":" 
 						+ (c.yf[i][j] ? rccnt++ : lccnt++);
 				if (j != c.yf[i].length - 1) {
-					result += " ";
+					lin += " ";
 				}
 			}
-			result += "]";
-			if (i != c.yf.length - 1) {
-				result += " ";
+			int thislinid = linid;
+			if (!lins2id.containsKey(lin)) {
+				lins2id.put(lin, linid);
+				id2lins.put(linid, lin);
+				linid++;
+			} else {
+				thislinid = lins2id.get(lin);
 			}
+			r.lin[i] = thislinid;
+			lin = "";
 		}
-		return result;
+		return r;
+	}
+	
+	private Map<String,Integer> lins2id;
+	private Map<Integer,String> id2lins;
+	
+	public BinaryRCGWriterPMCFG() {
+		lins2id = new HashMap<String,Integer>();
+		id2lins = new HashMap<Integer,String>();
+		linid = 0;
 	}
 	
     @Override
@@ -79,53 +112,71 @@ public class BinaryRCGWriterPMCFG implements GrammarWriter<BinaryRCG> {
     GrammarException {
     	Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(grammarPath), encoding));
 
-    	w.write("*** pragmas\n");
+    	w.write("-- pragmas\n");
     	w.write("\n");
     	w.write(":encoding " + encoding + "\n");
     	w.write(":start " + g.getNumberer().getObjectWithId(GrammarConstants.PREDLABEL, g.getStartPredLabel()) + "\n");
     	w.write("\n");
-
-    	w.write("*** arity definitions \n");
-    	w.write("\n");
-    	for (Integer labeln : g.clByParent.keySet()) {
-			String labels = (String) g.getNumberer().getObjectWithId(GrammarConstants.PREDLABEL, labeln);
-    		int arity = Utilities.getArity(labels);
-        	w.write(labels + " " + arity + "\n");
-    	}
-
-    	w.write("\n");
-    	w.write("*** lexicon arity definitions \n");
-    	w.write("\n");
-    	for (Integer tag : lex.getPreterminals()) {
-    		String tags = (String) g.getNumberer().getObjectWithId(GrammarConstants.PREDLABEL, tag);
-    		w.write(tags + " : " + 1 + "\n");
-    	}
-    	w.write("\n");
-    	
     	int id = 0;
-
-    	w.write("\n");
-    	w.write("*** lexicon\n");
     	w.write("\n");
 
-    	for (Integer word : lex.getWords()) {
-    		String words = (String) g.getNumberer().getObjectWithId(LexiconConstants.LEXWORD, word);
-    		for (Integer tag : lex.getTagForWord(word)) {
-    			String tags = (String) g.getNumberer().getObjectWithId(GrammarConstants.PREDLABEL, tag);
-    			w.write(id++ + " : " + tags + " <- " + "[\"" + words + "\"]\n");
-    		}
-    	}
-    	
+    	w.write("-- rules \n");
     	w.write("\n");
-    	w.write("*** rules \n");
-    	w.write("\n");
-    	
+    	HashMap<String,Rule> id2rule = new HashMap<String,Rule>();
     	for (Integer labeln : g.clByParent.keySet()) {
     		for (BinaryClause c : g.clByParent.get(labeln)) {
-                w.write(id++ + " : " + clauseToString(c, g.getNumberer()) + "\n"); 
+    			id2rule.put("f" + String.valueOf(id++), parseClause(c, g.getNumberer()));
             }
         }
     	
+    	List<String> sortedKeys = new ArrayList<String>();
+    	sortedKeys.addAll(id2rule.keySet());
+    	Collections.sort(sortedKeys, new Comparator<String>() {
+
+			@Override
+			public int compare(String arg0, String arg1) {
+				Integer i0 = Integer.valueOf(arg0.substring(1));
+				Integer i1 = Integer.valueOf(arg1.substring(1));
+				return i0.compareTo(i1);
+			}
+    		
+    	});
+
+    	for (String key : sortedKeys) {
+    		Rule r = id2rule.get(key);
+    		w.write(key + " : " + r.lhs + " <- ");
+    		for (int i = 0; i < r.rhs.length; ++i) {
+    			w.write(r.rhs[i]);
+    			if (i != r.rhs.length - 1) {
+    				w.write(" ");
+    			}
+    		}
+			w.write("\n");
+    	}
+		w.write("\n");
+		w.write("\n");
+		
+    	w.write("-- linearization \n");
+    	for (String key : sortedKeys) {
+    		Rule r = id2rule.get(key);
+    		w.write(key + " = ");
+    		for (int i = 0; i < r.lin.length; ++i) {
+    			w.write("s" + String.valueOf(r.lin[i]));
+    			if (i != r.lin.length - 1) {
+    				w.write(" ");
+    			}
+    		}
+    		w.write("\n");
+    	}    	
+		w.write("\n");
+		w.write("\n");
+
+		w.write("-- linearization definitions\n");
+		for (Integer linid : id2lins.keySet()) {
+			w.write("s" + linid + " => " + id2lins.get(linid) + "\n");
+		}
+		w.write("\n");
+
     	w.flush();
     	w.close();
     }
