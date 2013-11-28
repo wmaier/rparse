@@ -28,6 +28,7 @@ import java.io.IOException;
 
 import de.tuebingen.rparse.treebank.UnknownTaskException;
 import de.tuebingen.rparse.treebank.constituent.negra.NegraHeadFinder;
+import de.tuebingen.rparse.treebank.constituent.ptb.PTBHeadFinder;
 
 public class HeadFinderFactory {
 
@@ -35,6 +36,9 @@ public class HeadFinderFactory {
 		
 		if (params.startsWith(HeadFinderTypes.NEGRA)) 
 			return new NegraHeadFinder(params);
+		
+		if (params.startsWith(HeadFinderTypes.PTB))
+			return new PTBHeadFinder(params, false);
 
 		if (params.startsWith(HeadFinderTypes.LABEL))
 			return new LabelHeadFinder(params);

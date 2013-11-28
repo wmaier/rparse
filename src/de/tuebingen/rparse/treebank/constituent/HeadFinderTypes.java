@@ -29,5 +29,7 @@ public interface HeadFinderTypes {
 	public static final String NEGRA = "negra";
 
 	public static final String LABEL = "label";
+
+	public static final String PTB = "ptb";
 	
 }
