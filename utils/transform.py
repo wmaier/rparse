@@ -4,7 +4,7 @@
 Authors: Wolfgang Maier <maierw@hhu.de>
 Version: 29 January 2014
 """
-from __future__ import print_function
+from __future__ import print_function, with_statement, division
 import getopt
 import sys
 import io
@@ -16,6 +16,14 @@ Transform trees in INPUT using ALGORITHM and write result to OUTPUT.
   -e, --inputencoding=ENC      encoding of INPUT (default latin-1)
   -i, --inputformat=FORMAT     format of INPUT (default export)
   -o, --outputformat=FORMAT    format of OUTPUT (default export3)
+  -s, --split=HOW              split output into n files OUTPUT.(0..n-1).
+                               HOW is a string specifying the distribution 
+                               of sentences into parts. Each of the n parts 
+                               is specified by a number followed either by 
+                               '#' (denoting a certain number of sentences) 
+                               or '%%' (denoting a percentage). One part can
+                               use the keyword 'rest'. Part specifications
+                               must be separated by a single '_'.
   -h, --help                   display this help and exit
 
 Available algorithms (see docstrings)
@@ -33,7 +41,8 @@ Available input formats
   export                       Export format (3 or 4). Ignores all fields
                                after the parent number since not all export
                                treebanks respect the original export definition
-                               from Brants (1997) (see TueBa-D/Z 8).
+                               from Brants (1997) (see TueBa-D/Z 8). Tree ids
+                               are assigned by counting (not by BOS/EOS).
 
 Available output formats: 
   export3                      Export format 3 (missing lemma will be 
@@ -478,6 +487,50 @@ def parse_export(in_file, in_encoding):
                     sentence = []
 
 
+def parse_split_specification(split_spec, size):
+    """Parse the specification of part sizes for output splitting.
+    The specification must be given as list of part size specifications 
+    separated by underscores where each part size specification is either a
+    number suffixed by '#' (denoting an absolute size) or '%%' (denoting
+    a percentage), or the keyword 'rest' which may occur once (denoting
+    the part which receives the difference between the given number of
+    trees and the sum of trees distributed into other parts given by the
+    numerical part size specifications). """
+    parts = []
+    rest_index = None # remember where the 'rest' part is
+    for i, part_spec in enumerate(split_spec.split('_')):
+        if part_spec[-1] == "%":
+            parts.append(int(round((int(part_spec[:-1]) / 100) * size)))
+        elif part_spec[-1] == "#":
+            parts.append(int(part_spec[:-1]))
+        elif part_spec == 'rest':
+            if rest_index == None:
+                parts.append(0)
+                rest_index = i
+            else:
+                raise ValueError("'rest' keyword used more than once")
+        else:
+            raise ValueError("cannot parse specification '%s'" % split_spec)
+    # check if it makes sense
+    sum_parts = sum(parts)
+    if sum_parts < size:
+        diff = size - sum_parts
+        if not rest_index == None:
+            parts[rest_index] = diff
+        else:
+            sys.stderr.write("rounding: extra %d sentences will be added\n")
+            sys.stderr.write("to part with the largest number of\n" % diff)
+            sys.stderr.write("sentences. In case of a tie, the sentences\n")
+            sys.stderr.write("are added to the first part.\n")
+            parts[parts.index(max(parts))] += diff
+    elif sum_parts == size:
+        if not rest_index == None:
+            sys.stderr.write("warning: 'rest' part will be empty\n")
+    elif sum_parts > size:
+        raise ValueError("treebank smaller than sum of split (%d vs %d)\n" \
+                             % (size, sum_parts))
+    return parts
+
 # register available stuff 
 # reading trees
 PARSER = { 'export' : parse_export }
@@ -507,11 +560,12 @@ PIPELINE = { 'none' : ['a_none'], \
 def main():
     """Parse command line and run uncrossing."""
     try:
-        (opts, args) = getopt.getopt(sys.argv[1:], 'hi:e:o:', [
+        (opts, args) = getopt.getopt(sys.argv[1:], 'hi:e:o:s:', [
             'help',
             'inputformat=', 
             'inputencoding=',
-            'outputformat='
+            'outputformat=',
+            'split='
             ])
     except getopt.GetoptError, err:
         sys.stderr.write("%s: %s\nTry '%s --help' for more information.\n" \
@@ -521,6 +575,7 @@ def main():
     in_encoding = 'latin-1'
     in_format = 'export'
     out_format = 'export3'
+    split_spec = None
     for (opt, arg) in opts:
         if opt in ('-h', '--help'):
             print(USAGE)
@@ -531,6 +586,8 @@ def main():
             in_encoding = arg
         elif opt in ('-o', '--outputformat'):
             out_format = arg
+        elif opt in ('-s', '--split'):
+            split_spec = arg
     if len(args) < 3:
         sys.stderr.write("%s: %s\nTry '%s --help' for more information.\n" \
                              % (sys.argv[0], "Missing arguments.", sys.argv[0]))
@@ -538,25 +595,54 @@ def main():
     pipeline, in_file, out_file = sys.argv[-3:]
     sys.stderr.write("reading from '%s' in encoding '%s'\n" \
                      % (in_file, in_encoding))
+    sys.stderr.write("applying '%s'\n" % PIPELINE[pipeline])
     sys.stderr.write("writing to '%s' in format '%s' and encoding 'utf-8'\n" \
                          % (out_file, out_format))
-    sys.stderr.write("applying '%s'\n" % PIPELINE[pipeline])
+    if not split_spec == None:
+        sys.stderr.write("splitting output like this: %s\n" % split_spec)
     cnt = 1
-    with io.open(out_file, 'w', encoding='utf-8') as out_stream:
-        # set output stream for output function
-        OUTPUT[out_format][1].update({'stream' : out_stream})
+    if split_spec == None:
+        # read, process and write trees
+        with io.open(out_file, 'w', encoding='utf-8') as out_stream:
+            # set output stream for output function
+            OUTPUT[out_format][1].update({'stream' : out_stream})
+            for tree in PARSER[in_format](in_file, in_encoding):
+                for algorithm in PIPELINE[pipeline]:
+                    tree = ALGORITHMS[algorithm][0](tree, \
+                                                        **ALGORITHMS[algorithm][1])
+                # set sentence number 
+                OUTPUT[out_format][1].update({'tree_id' : cnt})
+                OUTPUT[out_format][0](tree, **OUTPUT[out_format][1])
+                if cnt % 100 == 0:
+                    sys.stderr.write("\r%d" % cnt)
+                cnt += 1
+    else:
+        # read and process trees
+        cnt = 1
+        trees = []
         for tree in PARSER[in_format](in_file, in_encoding):
             for algorithm in PIPELINE[pipeline]:
                 tree = ALGORITHMS[algorithm][0](tree, \
                                                     **ALGORITHMS[algorithm][1])
-            # set sentence number 
-            OUTPUT[out_format][1].update({'tree_id' : cnt})
-            OUTPUT[out_format][0](tree, **OUTPUT[out_format][1])
-            if cnt % 100 == 0:
-                sys.stderr.write("\r%d" % cnt)
-            cnt += 1
-    sys.stderr.write("\n")
-
+                trees.append(tree)
+                if cnt % 100 == 0: sys.stderr.write("\r%d" % cnt)
+                cnt += 1
+        sys.stderr.write("\n")
+        parts = parse_split_specification(split_spec, len(trees))
+        # write the parts
+        sys.stderr.write("writing parts of sizes %s\n" % str(parts))
+        for i, part_size in enumerate(parts):
+            sys.stderr.write("writing part %d\n" % i)
+            with io.open("%s.%d" % (out_file, i), 'w', encoding='utf-8') \
+                    as out_stream:
+                OUTPUT[out_format][1].update({'stream' : out_stream})
+                for tree_id in range(0, part_size):
+                    OUTPUT[out_format][1].update({'tree_id' : tree_id + 1})
+                    OUTPUT[out_format][0](tree, **OUTPUT[out_format][1])
+                    if tree_id % 100 == 0: sys.stderr.write("\r%d" % tree_id)
+                    tree_id += 1
+                sys.stderr.write("\n")
+        sys.stderr.write("done\n")
 
 if __name__ == '__main__':
     main()
