@@ -496,6 +496,7 @@ def parse_split_specification(split_spec, size):
     the part which receives the difference between the given number of
     trees and the sum of trees distributed into other parts given by the
     numerical part size specifications). """
+    print("parsing split spec %s, %d", (split_spec, size))
     parts = []
     rest_index = None # remember where the 'rest' part is
     for i, part_spec in enumerate(split_spec.split('_')):
@@ -503,12 +504,9 @@ def parse_split_specification(split_spec, size):
             parts.append(int(round((int(part_spec[:-1]) / 100) * size)))
         elif part_spec[-1] == "#":
             parts.append(int(part_spec[:-1]))
-        elif part_spec == 'rest':
-            if rest_index == None:
-                parts.append(0)
-                rest_index = i
-            else:
-                raise ValueError("'rest' keyword used more than once")
+        elif part_spec == 'rest' and rest_index == None:
+            parts.append(0)
+            rest_index = i
         else:
             raise ValueError("cannot parse specification '%s'" % split_spec)
     # check if it makes sense
@@ -608,8 +606,9 @@ def main():
             OUTPUT[out_format][1].update({'stream' : out_stream})
             for tree in PARSER[in_format](in_file, in_encoding):
                 for algorithm in PIPELINE[pipeline]:
-                    tree = ALGORITHMS[algorithm][0](tree, \
-                                                        **ALGORITHMS[algorithm][1])
+                    tree = \
+                        ALGORITHMS[algorithm][0](tree, \
+                                                     **ALGORITHMS[algorithm][1])
                 # set sentence number 
                 OUTPUT[out_format][1].update({'tree_id' : cnt})
                 OUTPUT[out_format][0](tree, **OUTPUT[out_format][1])
@@ -622,14 +621,17 @@ def main():
         trees = []
         for tree in PARSER[in_format](in_file, in_encoding):
             for algorithm in PIPELINE[pipeline]:
-                tree = ALGORITHMS[algorithm][0](tree, \
-                                                    **ALGORITHMS[algorithm][1])
-                trees.append(tree)
-                if cnt % 100 == 0: sys.stderr.write("\r%d" % cnt)
-                cnt += 1
+                tree = \
+                    ALGORITHMS[algorithm][0](tree, \
+                                                 **ALGORITHMS[algorithm][1])
+            trees.append(tree)
+            if cnt % 100 == 0: 
+                sys.stderr.write("\r%d" % cnt)
+            cnt += 1
         sys.stderr.write("\n")
-        parts = parse_split_specification(split_spec, len(trees))
         # write the parts
+        parts = parse_split_specification(split_spec, len(trees))
+        tree_iter = iter(trees)
         sys.stderr.write("writing parts of sizes %s\n" % str(parts))
         for i, part_size in enumerate(parts):
             sys.stderr.write("writing part %d\n" % i)
@@ -638,8 +640,10 @@ def main():
                 OUTPUT[out_format][1].update({'stream' : out_stream})
                 for tree_id in range(0, part_size):
                     OUTPUT[out_format][1].update({'tree_id' : tree_id + 1})
-                    OUTPUT[out_format][0](tree, **OUTPUT[out_format][1])
-                    if tree_id % 100 == 0: sys.stderr.write("\r%d" % tree_id)
+                    OUTPUT[out_format][0](tree_iter.next(), \
+                                              **OUTPUT[out_format][1])
+                    if tree_id % 100 == 0: 
+                        sys.stderr.write("\r%d" % tree_id)
                     tree_id += 1
                 sys.stderr.write("\n")
         sys.stderr.write("done\n")
