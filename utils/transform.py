@@ -1,5 +1,6 @@
 #!/usr/bin/python
-""" Tools for transforming treebank trees.
+""" 
+Tools for transforming treebank trees.
 
 Authors: Wolfgang Maier <maierw@hhu.de>
 Version: 29 January 2014
@@ -46,8 +47,13 @@ Available input formats
 
 Available output formats: 
   export3                      Export format 3 (missing lemma will be 
-                               substituted with --)
-  export4                      Export format 4 (with lemma)
+                               substituted with --, everything after '=' in 
+                               a label will be discarded)
+  export4                      Export format 4 (as above, but with lemma)
+  brackets                     General bracketing (does not work with 
+                               discontinuous trees), one sentence per line
+  brackets-gf                  As above, but decorate labels with edge
+                               labels in case edge does not start with -
 
 A single (sub)tree is represented by a dict with obligatory keys
 DATA, CHILDREN, PARENT. We do not rely on the children to be ordered. 
@@ -62,6 +68,7 @@ a given encoding and yielding trees. Tree writer functions write
 single trees plus id to a given stream, always as UTF8. Tree transformation
 functions take a tree as input and return the transformed tree. 
 """ % sys.argv[0]
+# tree constants
 NUMBER_OF_FIELDS = 6
 WORD, LEMMA, LABEL, MORPH, \
     EDGE, PARENT_NUM = tuple(range(NUMBER_OF_FIELDS))
@@ -70,6 +77,8 @@ NUM = 'num'
 DATA = 'data'
 CHILDREN = 'children'
 PARENT = 'parent'
+# other constants
+GF_SEPARATOR = u"-"
 
 #
 # Tree modification
@@ -316,6 +325,16 @@ def lca(tree_a, tree_b):
     return None
 
 
+def is_discontinuous(tree):
+    """Return True iff this tree contains at least one discontinuous node."""
+    for subtree in preorder(tree):
+        terms = terminals(subtree)
+        for i, _ in enumerate(terms[:-1]):
+            if terms[i][NUM] + 1 < terms[i + 1][NUM]:
+                return True
+    return False
+
+
 #
 # Writing trees
 #
@@ -405,6 +424,45 @@ def write_export(tree, **params):
     stream.write(u"#EOS %d\n" % tree_id)
 
 
+def replace(arg):
+    """Replace bracket characters in node data before bracketing output."""
+    arg = arg.replace("(", "LRB")
+    arg = arg.replace("(", "RRB")
+    arg = arg.replace("[", "LSB")
+    arg = arg.replace("]", "RSB")
+    arg = arg.replace("{", "LCB")
+    arg = arg.replace("}", "RCB")
+    return arg
+
+
+def write_brackets_subtree(tree, **params):
+    """Write a single bracketed subtree."""
+    stream = params['stream']
+    gf = params['gf']
+    stream.write(u"(")
+    if has_children(tree):
+        stream.write(tree[DATA][LABEL])
+        for child in children(tree):
+            write_brackets_subtree(child, **params)
+    else:
+        for i in [WORD, LEMMA, LABEL, MORPH]: 
+            tree[DATA][i] = replace(tree[DATA][i])
+        stream.write(tree[DATA][LABEL])
+        if gf and not tree[DATA][EDGE].startswith("-"):
+            stream.write(u"%s%s" % (GF_SEPARATOR, tree[DATA][EDGE]))
+        stream.write(" %s" % tree[DATA][WORD])
+    stream.write(u")")
+
+
+def write_brackets(tree, **params):
+    """Write bracketed tree, one tree per line. Tree must not be 
+    discontinuous."""
+    if is_discontinuous(tree):
+        raise ValueError("cannot write a discontinuous trees with brackets.")
+    write_brackets_subtree(tree, **params)
+    params['stream'].write(u"\n")
+
+
 #
 # Reading trees
 #
@@ -443,6 +501,10 @@ def export_parse_line(line):
     fields[PARENT_NUM] = int(fields[PARENT_NUM])
     if not (500 <= fields[PARENT_NUM] < 1000 or fields[PARENT_NUM] == 0):
         raise ValueError("parent field must be 0 or between 500 and 999")
+    # replace stuff (TODO: make this nicer)
+    equals_pos = fields[LABEL].find("=")
+    if equals_pos >= 0:
+        fields[LABEL] = fields[LABEL][0:equals_pos]
     return fields
 
 
@@ -487,6 +549,10 @@ def parse_export(in_file, in_encoding):
                     sentence = []
 
 
+#
+# other stuff
+#
+
 def parse_split_specification(split_spec, size):
     """Parse the specification of part sizes for output splitting.
     The specification must be given as list of part size specifications 
@@ -496,7 +562,6 @@ def parse_split_specification(split_spec, size):
     the part which receives the difference between the given number of
     trees and the sum of trees distributed into other parts given by the
     numerical part size specifications). """
-    print("parsing split spec %s, %d", (split_spec, size))
     parts = []
     rest_index = None # remember where the 'rest' part is
     for i, part_spec in enumerate(split_spec.split('_')):
@@ -529,12 +594,15 @@ def parse_split_specification(split_spec, size):
                              % (size, sum_parts))
     return parts
 
+
 # register available stuff 
 # reading trees
 PARSER = { 'export' : parse_export }
 # writing trees
 OUTPUT = { 'export3' : (write_export, {'is_four' : False}), \
-               'export4' : (write_export, {'is_four' : True})
+               'export4' : (write_export, {'is_four' : True}), \
+               'brackets' : (write_brackets, {'gf' : False}), \
+               'brackets-gf' : (write_brackets, {'gf' : True}), \
            }
 # transformation of trees
 ALGORITHMS = { 'a_none' : (nothing, {}), \
@@ -615,6 +683,7 @@ def main():
                 if cnt % 100 == 0:
                     sys.stderr.write("\r%d" % cnt)
                 cnt += 1
+        sys.stderr.write("\n")
     else:
         # read and process trees
         cnt = 1
@@ -646,7 +715,7 @@ def main():
                         sys.stderr.write("\r%d" % tree_id)
                     tree_id += 1
                 sys.stderr.write("\n")
-        sys.stderr.write("done\n")
+    sys.stderr.write("done\n")
 
 if __name__ == '__main__':
     main()
