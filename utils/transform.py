@@ -43,7 +43,7 @@ Available input formats
                                after the parent number since not all export
                                treebanks respect the original export definition
                                from Brants (1997) (see TueBa-D/Z 8). Tree ids
-                               are assigned by counting (not by BOS/EOS).
+                               are taken from #BOS markers.
 
 Available output formats: 
   export3                      Export format 3 (missing lemma will be 
@@ -513,12 +513,14 @@ def parse_export(in_file, in_encoding):
     references and yield trees as described above. """
     in_sentence = False
     sentence = []
+    sentence_id = None
     with io.open(in_file, encoding=in_encoding) as stream:
         for line in stream:
             line = line.strip()
             if not in_sentence:
                 if line.startswith(u"#BOS"):
                     in_sentence = True
+                    sentence_id = int(line.split()[1])
                     sentence.append(line)
             else:
                 sentence.append(line)
@@ -544,7 +546,9 @@ def parse_export(in_file, in_encoding):
                         if not fields[PARENT_NUM] in children_by_num:
                             children_by_num[fields[PARENT_NUM]] = []
                         children_by_num[fields[PARENT_NUM]].append(num)
-                    yield export_build_tree(0, node_by_num, children_by_num)
+                    result = export_build_tree(0, node_by_num, children_by_num)
+                    result['id'] = sentence_id
+                    yield result
                     in_sentence = False
                     sentence = []
 
@@ -678,7 +682,10 @@ def main():
                         ALGORITHMS[algorithm][0](tree, \
                                                      **ALGORITHMS[algorithm][1])
                 # set sentence number 
-                OUTPUT[out_format][1].update({'tree_id' : cnt})
+                tree_id = cnt
+                if 'id' in tree:
+                    tree_id = tree['id']
+                OUTPUT[out_format][1].update({'tree_id' : tree_id})
                 OUTPUT[out_format][0](tree, **OUTPUT[out_format][1])
                 if cnt % 100 == 0:
                     sys.stderr.write("\r%d" % cnt)
@@ -708,7 +715,10 @@ def main():
                     as out_stream:
                 OUTPUT[out_format][1].update({'stream' : out_stream})
                 for tree_id in range(0, part_size):
-                    OUTPUT[out_format][1].update({'tree_id' : tree_id + 1})
+                    my_tree_id = tree_id + 1
+                    if 'id' in tree:
+                        my_tree_id = tree['id']
+                    OUTPUT[out_format][1].update({'tree_id' : my_tree_id})
                     OUTPUT[out_format][0](tree_iter.next(), \
                                               **OUTPUT[out_format][1])
                     if tree_id % 100 == 0: 
