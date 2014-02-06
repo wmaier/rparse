@@ -427,7 +427,7 @@ def write_export(tree, **params):
 def replace(arg):
     """Replace bracket characters in node data before bracketing output."""
     arg = arg.replace("(", "LRB")
-    arg = arg.replace("(", "RRB")
+    arg = arg.replace(")", "RRB")
     arg = arg.replace("[", "LSB")
     arg = arg.replace("]", "RSB")
     arg = arg.replace("{", "LCB")
