@@ -440,17 +440,17 @@ def write_brackets_subtree(tree, **params):
     stream = params['stream']
     gf = params['gf']
     stream.write(u"(")
+    for i in [WORD, LEMMA, LABEL, MORPH]: 
+        tree[DATA][i] = replace(tree[DATA][i])
+    label = tree[DATA][LABEL]
     if has_children(tree):
-        stream.write(tree[DATA][LABEL])
+        if gf and not tree[DATA][EDGE].startswith("-"):
+            label += u"%s%s" % (GF_SEPARATOR, tree[DATA][EDGE])
+        stream.write(label)
         for child in children(tree):
             write_brackets_subtree(child, **params)
     else:
-        for i in [WORD, LEMMA, LABEL, MORPH]: 
-            tree[DATA][i] = replace(tree[DATA][i])
-        stream.write(tree[DATA][LABEL])
-        if gf and not tree[DATA][EDGE].startswith("-"):
-            stream.write(u"%s%s" % (GF_SEPARATOR, tree[DATA][EDGE]))
-        stream.write(" %s" % tree[DATA][WORD])
+        stream.write("%s %s" % (label, tree[DATA][WORD]))
     stream.write(u")")
 
 
@@ -528,7 +528,11 @@ def parse_export(in_file, in_encoding):
                     node_by_num = {}
                     children_by_num = {}
                     node_by_num[0] = [None] * NUMBER_OF_FIELDS
+                    node_by_num[0][WORD] = u"VROOT"
+                    node_by_num[0][LEMMA] = u"--"
                     node_by_num[0][LABEL] = u"VROOT"
+                    node_by_num[0][MORPH] = u"--"
+                    node_by_num[0][EDGE] = u"--"
                     term_cnt = 1
                     for fields in [export_parse_line(line) \
                                        for line in sentence[1:-1]]:
