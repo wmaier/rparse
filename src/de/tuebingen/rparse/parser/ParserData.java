@@ -173,4 +173,10 @@ public class ParserData implements Serializable {
         return ret;
     }
 
+    public static ParserData buildFromBinaryGrammar(String filename)
+	throws IOException {
+	ParserData res = new ParserData();
+	return res;
+    }
+
 }

@@ -168,7 +168,7 @@ public class Rparse {
 
 		op.add(CommandLineOption.Prefix.DASH, "parserType",
 				CommandLineOption.Separator.BLANK, true,
-				"Parser type [cyk*|cyknaive]");
+				"Parser type [cyk*|cyknaive|cyktwo]");
 
 		// Training mode
 		// *********************************************************
@@ -294,6 +294,9 @@ public class Rparse {
 		op.add(CommandLineOption.Prefix.DASH, "readModel",
 				CommandLineOption.Separator.BLANK, true,
 				"Read trained model (serialized) from file []");
+		op.add(CommandLineOption.Prefix.DASH, "readBinary",
+		                CommandLineOption.Separator.BLANK, true,
+               		       "Read binary grammar from file (PMCFG format only) []");
 		op.add(CommandLineOption.Prefix.DASH, "test",
 				CommandLineOption.Separator.BLANK, true, "Testing treebank []");
 		op.add(CommandLineOption.Prefix.DASH, "testFormat",
@@ -671,6 +674,7 @@ public class Rparse {
 			yfcompparams = op.getVal("yfCompParams");
 		String test = op.getVal("test");
 		String readModel = op.getVal("readModel");
+		String readBinary = op.getVal("readBinary");
 		String testFormat = "rparse-tagged";
 		if (op.check("testFormat"))
 			testFormat = op.getVal("testFormat");
@@ -809,6 +813,7 @@ public class Rparse {
 			logger.config("  test            : " + test);
 			logger.config("  timeout         : " + timeout);
 			logger.config("  readModel       : " + readModel);
+			logger.config("  readBinary      : " + readBinary);
 			logger.config("  parserType      : " + parserType);
 			logger.config("  yfComp          : " + yfcomp);
 			logger.config("  yfCompParams    : " + yfcompparams);
@@ -848,8 +853,8 @@ public class Rparse {
 
 		if (doTrain) {
 			pd = new ParserData(new RCG(nb), new Lexicon(nb), nb);
-			if (readModel != null) {
-				logger.severe("Either do training or load a pretrained model. Cannot do both.");
+			if (readModel != null || readBinary != null) {
+				logger.severe("Either do training, load a pretrained model or load a binary grammar.");
 				System.exit(8);
 			}
 			if (trainingTreebank == null && trainGrammar == null) {
@@ -1292,6 +1297,10 @@ public class Rparse {
 		} // end train
 
 		if (doParse) {
+		        if (readModel != null && readBinary != null) {
+				logger.severe("Either load pretrained model or load a binary grammar, not both.");
+				System.exit(8);
+		        }
 			if (readModel != null) {
 				// load model from file
 				logger.info("Reading model from " + readModel + "...");
@@ -1307,6 +1316,17 @@ public class Rparse {
 					System.exit(102);
 				}
 				logger.info("finished.");
+			} 
+			if (readBinary != null) {
+                                logger.info("Reading binary grammar from " + readBinary + "...");
+                                try {
+				    pd = ParserData.buildFromBinaryGrammar(readBinary);
+				} catch (IOException e) {
+				    logger.severe("IOException: " + e.getMessage());
+				    e.printStackTrace();
+				    System.exit(101);
+				}
+				logger.info("finished");
 			}
 
 			if (pd == null) {
