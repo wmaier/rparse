@@ -22,10 +22,11 @@
  * You should have received a copy of the GNU General Public License along 
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package de.tuebingen.rparse.grammar;
+package de.tuebingen.rparse.grammar.read;
 
 import java.util.logging.Logger;
 
+import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.treebank.HasID;
 import de.tuebingen.rparse.treebank.ProcessingTask;
 import de.tuebingen.rparse.treebank.TreebankException;

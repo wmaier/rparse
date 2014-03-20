@@ -22,7 +22,7 @@
  * You should have received a copy of the GNU General Public License along 
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package de.tuebingen.rparse.grammar;
+package de.tuebingen.rparse.grammar.read;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,6 +36,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.tuebingen.rparse.grammar.Clause;
+import de.tuebingen.rparse.grammar.ClauseOccurrence;
+import de.tuebingen.rparse.grammar.GrammarConstants;
+import de.tuebingen.rparse.grammar.GrammarException;
+import de.tuebingen.rparse.grammar.RCG;
 import de.tuebingen.rparse.misc.Numberer;
 import de.tuebingen.rparse.treebank.lex.Lexicon;
 

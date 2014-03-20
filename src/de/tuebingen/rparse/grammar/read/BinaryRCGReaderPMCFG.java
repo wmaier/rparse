@@ -38,33 +38,34 @@ import de.tuebingen.rparse.grammar.GrammarConstants;
 import de.tuebingen.rparse.grammar.GrammarException;
 
 public class BinaryRCGReaderPMCFG extends BufferedReader {
-    
-    private String startPred = "";
-    private Numberer nb = null;
 
-    public BinaryRCGReaderPMCFG(File f, Numberer nb) 
-	throws FileNotFoundException {
-	super(new FileReader(f));
-	this.startPred = GrammarConstants.DEFAULTSTART;
-	this.nb = nb;
-    }
+	private String startPred = "";
+	private Numberer nb = null;
 
-    public BinaryRCG getRCG() throws IOException, GrammarException {
-	RCG rcg = new RCG(this.nb);
-	BinaryRCG res = new BinaryRCG(new RCG(this.nb), null);
-	HashMap<String,String> funcs = new HashMap<String, String>();
-	HashMap<String,String> lindef = new HashMap<String, String>();
-	HashMap<String,String> lin = new HashMap<String, String>();
-	String line = "";
-        while ((line = super.readLine()) != null) {
-	    System.err.println(line);
+	public BinaryRCGReaderPMCFG(File f, Numberer nb)
+			throws FileNotFoundException {
+		super(new FileReader(f));
+		this.startPred = GrammarConstants.DEFAULTSTART;
+		this.nb = nb;
 	}
-	return res;
-    }
 
-    public static void main(String[] args) throws Exception {
-        BinaryRCGReaderPMCFG r = new BinaryRCGReaderPMCFG(new File(args[0]), new Numberer());
-	BinaryRCG res = r.getRCG();
-    }
+	public BinaryRCG getRCG() throws IOException, GrammarException {
+		RCG rcg = new RCG(this.nb);
+		BinaryRCG res = new BinaryRCG(new RCG(this.nb), null);
+		HashMap<String, String> funcs = new HashMap<String, String>();
+		HashMap<String, String> lindef = new HashMap<String, String>();
+		HashMap<String, String> lin = new HashMap<String, String>();
+		String line = "";
+		while ((line = super.readLine()) != null) {
+			System.err.println(line);
+		}
+		return res;
+	}
+
+	public static void main(String[] args) throws Exception {
+		BinaryRCGReaderPMCFG r = new BinaryRCGReaderPMCFG(new File(args[0]),
+				new Numberer());
+		BinaryRCG res = r.getRCG();
+	}
 
 }
