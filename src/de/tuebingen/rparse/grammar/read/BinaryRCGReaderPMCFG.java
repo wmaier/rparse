@@ -31,7 +31,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.tuebingen.rparse.grammar.BinaryRCG;
 import de.tuebingen.rparse.grammar.GrammarConstants;
@@ -41,8 +44,16 @@ import de.tuebingen.rparse.misc.Numberer;
 
 public class BinaryRCGReaderPMCFG extends BufferedReader {
 
+	private static Pattern IDENTIFIER = Pattern.compile("[a-zA-Z0-9_][^ \\t\\n\\r\\f\\v]+");
+	private static Pattern DIGIT = Pattern.compile("\\d+\\.\\d+");
+	private static String FUN = ":";
+	private static String LIN = "=";
+	private static String LINDEF = "->";
+	private static String LR = "<-";
+
 	private String startPred = "VROOT";
 	private Numberer nb = null;
+
 
 	public BinaryRCGReaderPMCFG(File f, Numberer nb)
 			throws FileNotFoundException {
@@ -50,7 +61,7 @@ public class BinaryRCGReaderPMCFG extends BufferedReader {
 		this.startPred = GrammarConstants.DEFAULTSTART;
 		this.nb = nb;
 	}
-
+	
 	public BinaryRCG getRCG() throws IOException, GrammarException {
 		RCG rcg = new RCG(this.nb);
 		int startPredNum = nb.number(GrammarConstants.PREDLABEL, startPred);
@@ -60,8 +71,27 @@ public class BinaryRCGReaderPMCFG extends BufferedReader {
 		HashMap<String, String> lindef = new HashMap<String, String>();
 		HashMap<String, String> lin = new HashMap<String, String>();
 		String line = "";
+		Matcher m = IDENTIFIER.matcher("");
+		Matcher m_digit = DIGIT.matcher("");
 		while ((line = super.readLine()) != null) {
+			ArrayList<String> identifiers = new ArrayList<>();
+			String[] sp = line.split("\\s+");
 			System.err.println(line);
+			int pos = 0;
+			while (m.reset(sp[pos]).matches()) {
+				identifiers.add(sp[pos]);
+				pos += 1;
+			}
+			String kw = sp[pos];
+			if (FUN.equals(kw)) {
+				System.out.println("fun " + line);
+			} else if (LIN.equals(kw)) {
+				System.out.println("lin " + line);
+			} else if (LINDEF.equals(kw)) {
+				System.out.println("lindef " + line);
+			} else if (m_digit.reset(kw).matches()) {
+				// must be pragma or comment
+			}
 		}
 		return res;
 	}
