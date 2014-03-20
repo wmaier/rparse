@@ -25,21 +25,23 @@
 package de.tuebingen.rparse.grammar.read;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 
-import de.tuebingen.rparse.misc.Numberer;
 import de.tuebingen.rparse.grammar.BinaryRCG;
-import de.tuebingen.rparse.grammar.RCG;
 import de.tuebingen.rparse.grammar.GrammarConstants;
 import de.tuebingen.rparse.grammar.GrammarException;
+import de.tuebingen.rparse.grammar.RCG;
+import de.tuebingen.rparse.misc.Numberer;
 
 public class BinaryRCGReaderPMCFG extends BufferedReader {
 
-	private String startPred = "";
+	private String startPred = "VROOT";
 	private Numberer nb = null;
 
 	public BinaryRCGReaderPMCFG(File f, Numberer nb)
@@ -51,7 +53,9 @@ public class BinaryRCGReaderPMCFG extends BufferedReader {
 
 	public BinaryRCG getRCG() throws IOException, GrammarException {
 		RCG rcg = new RCG(this.nb);
-		BinaryRCG res = new BinaryRCG(new RCG(this.nb), null);
+		int startPredNum = nb.number(GrammarConstants.PREDLABEL, startPred);
+		rcg.setStartPredLabel(startPredNum);
+		BinaryRCG res = new BinaryRCG(rcg, null);
 		HashMap<String, String> funcs = new HashMap<String, String>();
 		HashMap<String, String> lindef = new HashMap<String, String>();
 		HashMap<String, String> lin = new HashMap<String, String>();
@@ -63,9 +67,33 @@ public class BinaryRCGReaderPMCFG extends BufferedReader {
 	}
 
 	public static void main(String[] args) throws Exception {
-		BinaryRCGReaderPMCFG r = new BinaryRCGReaderPMCFG(new File(args[0]),
-				new Numberer());
+		
+		String grammar = "fun1 : S <- VP VMFIN\n"
+				+ "fun1 = s1\n"
+				+ "fun1 1\n"
+				+ "fun2 : VROOT <- S $.\n"
+				+ "fun2 = s2\n"
+				+ "fun2 1\n"
+				+ "fun3 : VP <- PROAV VVPP\n"
+				+ "fun3 = s3 s4\n"
+				+ "fun3 1\n"
+				+ "fun4 : VP <- VP VAINF\n"
+				+ "fun4 = s3 s5\n"
+				+ "fun4 1\n"
+				+ "s1 -> 0:0 1:0 0:1\n"
+				+ "s2 -> 0:0 1:0\n"
+				+ "s3 -> 0:0\n"
+				+ "s4 -> 1:0\n"
+				+ "s5 -> 0:1 1:0\n";
+		
+		File temp = File.createTempFile("temp",".txt");
+		temp.deleteOnExit();
+		BufferedWriter w = new BufferedWriter(new FileWriter(temp));
+		w.write(grammar);
+		w.close();
+		BinaryRCGReaderPMCFG r = new BinaryRCGReaderPMCFG(temp, new Numberer());
 		BinaryRCG res = r.getRCG();
+		r.close();
 	}
 
 }
