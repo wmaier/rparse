@@ -40,6 +40,9 @@ import de.tuebingen.rparse.grammar.BinaryClause;
 import de.tuebingen.rparse.grammar.BinaryRCG;
 import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.grammar.RCG;
+import de.tuebingen.rparse.grammar.TrainingMethod;
+import de.tuebingen.rparse.grammar.TrainingMethodFactory;
+import de.tuebingen.rparse.grammar.TrainingMethods;
 import de.tuebingen.rparse.grammar.estimates.Estimate;
 import de.tuebingen.rparse.grammar.read.BinaryRCGReaderPMCFG;
 import de.tuebingen.rparse.misc.Numberer;
@@ -182,16 +185,19 @@ public class ParserData implements Serializable {
 
 	public static ParserData buildFromBinaryGrammar(String filename)
 			throws IOException, GrammarException, UnknownTaskException, ParameterException {
-		ParserData res = new ParserData();
+		ParserData pd = new ParserData();
 		Numberer nb = new Numberer();
-		res.nb = nb;
+		pd.nb = nb;
 		BinaryRCGReaderPMCFG r = 
 					new BinaryRCGReaderPMCFG(new File(filename), nb);
-		res.bg = r.getRCG();
-		res.doFilter = false;
-		res.yfcomp = YieldFunctionComposerFactory.getYieldFunctionComposer(YieldFunctionComposerTypes.FAST, "");
+		pd.bg = r.getRCG();
+		TrainingMethod t = TrainingMethodFactory.getTrainingMethod(TrainingMethods.MLE, pd.g, pd.bg, pd.l, pd.nb, "");
+		t.setDoBinarized(true);
+		pd.doFilter = false;
+		t.process();
+		pd.yfcomp = YieldFunctionComposerFactory.getYieldFunctionComposer(YieldFunctionComposerTypes.FAST, "");
 		r.close();
-		return res;
+		return pd;
 	}
 
 }
