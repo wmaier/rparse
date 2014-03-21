@@ -32,10 +32,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.tuebingen.rparse.grammar.BinaryClause;
 import de.tuebingen.rparse.grammar.BinaryRCG;
 import de.tuebingen.rparse.grammar.GrammarConstants;
 import de.tuebingen.rparse.grammar.GrammarException;
@@ -44,6 +46,7 @@ import de.tuebingen.rparse.misc.Numberer;
 
 public class BinaryRCGReaderPMCFG extends BufferedReader {
 
+	private static Pattern COMMENT = Pattern.compile("^\\s*[#/*-]");
 	private static Pattern IDENTIFIER = Pattern.compile("[a-zA-Z0-9_][^ \\t\\n\\r\\f\\v]+");
 	private static Pattern DIGIT = Pattern.compile("\\d+\\.\\d+");
 	private static String FUN = ":";
@@ -67,32 +70,72 @@ public class BinaryRCGReaderPMCFG extends BufferedReader {
 		int startPredNum = nb.number(GrammarConstants.PREDLABEL, startPred);
 		rcg.setStartPredLabel(startPredNum);
 		BinaryRCG res = new BinaryRCG(rcg, null);
-		HashMap<String, String> funcs = new HashMap<String, String>();
-		HashMap<String, String> lindef = new HashMap<String, String>();
-		HashMap<String, String> lin = new HashMap<String, String>();
+		HashMap<String, String[]> funcs = new HashMap<>();
+		HashMap<String, String[]> lindef = new HashMap<>();
+		HashMap<String, String[]> lin = new HashMap<>();
+		HashMap<String, String> score = new HashMap<>();
 		String line = "";
 		Matcher m = IDENTIFIER.matcher("");
 		Matcher m_digit = DIGIT.matcher("");
+		Matcher m_comment = COMMENT.matcher("");
 		while ((line = super.readLine()) != null) {
 			ArrayList<String> identifiers = new ArrayList<>();
+			line = line.trim();
 			String[] sp = line.split("\\s+");
-			System.err.println(line);
 			int pos = 0;
 			while (m.reset(sp[pos]).matches()) {
 				identifiers.add(sp[pos]);
 				pos += 1;
 			}
 			String kw = sp[pos];
+			String[] def = Arrays.copyOfRange(sp, pos + 1, sp.length);
 			if (FUN.equals(kw)) {
-				System.out.println("fun " + line);
+				for (String identifier : identifiers) {
+					funcs.put(identifier, def);
+				}
 			} else if (LIN.equals(kw)) {
-				System.out.println("lin " + line);
+				for (String identifier : identifiers) {
+					lin.put(identifier, def);
+				}
 			} else if (LINDEF.equals(kw)) {
-				System.out.println("lindef " + line);
+				if (identifiers.size() != 1) {
+					throw new GrammarException("can only define linearization component for one id: " + line);
+				}
+				lindef.put(identifiers.get(0), def);
 			} else if (m_digit.reset(kw).matches()) {
-				// must be pragma or comment
+				if (identifiers.size() != 1) {
+					throw new GrammarException("can only define score/count for one id: " + line);
+				}
+				if (kw.length() != 2) {
+					throw new GrammarException("does not look like a score or count, but should be one: " + line);
+				}
+				// must be score
+				score.put(identifiers.get(0), sp[1]);
+			} else {
+				if (m_comment.reset(line).matches()) {
+					// do nothing
+				} else {
+					// also do nothing
+				}
 			}
 		}
+		
+		for (String funId : funcs.keySet()) {
+			String[] func = funcs.get(funId);
+			// number all labels
+			int lhs = nb.number(GrammarConstants.PREDLABEL, func[0]);
+			int[] rhs = new int[func.length - 2];
+			for (int i = 0; i < rhs.length ; ++i) {
+				rhs[i] = nb.number(GrammarConstants.PREDLABEL, func[i + 2]);
+			}
+			String[] linearization = lin.get(funId);
+			for (int i = 0; i < linearization.length; ++i) {
+				String linid = linearization[i];
+				String[] lindefel = lindef.get(linid);
+				// TODO: create variables
+			}
+		}
+		
 		return res;
 	}
 
