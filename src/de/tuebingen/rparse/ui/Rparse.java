@@ -1325,6 +1325,13 @@ public class Rparse {
 				    logger.severe("IOException: " + e.getMessage());
 				    e.printStackTrace();
 				    System.exit(101);
+				} catch (GrammarException e) {
+					logger.severe("GrammarException: " + e.getMessage());
+					e.printStackTrace();
+					System.exit(101);
+				} catch (UnknownTaskException e) {
+					logger.severe("UnknownTaskException: " + e.getMessage());
+					e.printStackTrace();
 				}
 				logger.info("finished");
 			}
