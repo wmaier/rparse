@@ -103,7 +103,6 @@ abstract public class AbstractBinarizer implements Binarizer, HasParameters {
         Numberer numberer = grammar.getNumberer();
         BinaryRCG result = new BinaryRCG(grammar, this.getClass());
 
-        // TODO See trac ticket #1
         Integer startpredLabel = grammar.getStartPredLabel();
         if (startpredLabel != null) {
             result.setStartPredLabel(startpredLabel);

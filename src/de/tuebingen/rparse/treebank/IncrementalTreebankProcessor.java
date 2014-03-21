@@ -151,7 +151,7 @@ public abstract class IncrementalTreebankProcessor<S extends HasSize> extends
 	 * Process the next sentence.
 	 * 
 	 * @param task The task to be used.
-     * @param maxlen Will be excluded if too long. TODO really necessary?
+     * @param maxlen Will be excluded if too long. 
 	 * @throws TreebankException
 	 * @throws NoSuchElementException
 	 *             if there is no next sentence.
