@@ -136,8 +136,11 @@ public class CYKParser implements RCGParser {
             throw new NoSuchElementException(
                     "Cannot run CYK parser without a yield function composer");
         this.pd = pd;
-        this.deterministicBinarization = pd.bg.getBinarizerType().equals(
-                DeterministicBinarizer.class);
+	if (pd.bg.getBinarizerType() == null) {
+	    this.deterministicBinarization = false;
+	} else {
+	    this.deterministicBinarization = pd.bg.getBinarizerType().equals(DeterministicBinarizer.class);
+	}
         try {
             sw = ConstituentSentenceWriterFactory
                     .getSentenceWriter(ConstituentInputFormats.EXPORT);

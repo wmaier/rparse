@@ -85,7 +85,7 @@ public class BinaryRCGReaderPMCFG extends BufferedReader {
 			line = line.trim();
 			String[] sp = line.split("\\s+");
 			int pos = 0;
-			while (m.reset(sp[pos]).matches()) {
+			while (m.reset(sp[pos]).matches() && pos < sp.length - 1) {
 				identifiers.add(sp[pos]);
 				pos += 1;
 			}
