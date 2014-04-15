@@ -32,11 +32,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import de.tuebingen.rparse.grammar.BinaryClause;
 import de.tuebingen.rparse.grammar.BinaryRCG;
@@ -47,15 +42,6 @@ import de.tuebingen.rparse.grammar.RCG;
 import de.tuebingen.rparse.misc.Numberer;
 
 public class BinaryRCGReaderRCG extends BufferedReader {
-
-	private static Pattern COMMENT = Pattern.compile("^\\s*[#/*-]");
-	private static Pattern IDENTIFIER = Pattern
-			.compile("[a-zA-Z0-9_][^ \\t\\n\\r\\f\\v]+");
-	private static Pattern DIGIT = Pattern.compile("\\d+"); // only allow counts
-															// for now
-	private static String FUN = ":";
-	private static String LIN = "=";
-	private static String LINDEF = "->";
 
 	private String startPred = "VROOT1";
 	private Numberer nb = null;
@@ -72,122 +58,62 @@ public class BinaryRCGReaderRCG extends BufferedReader {
 		int startPredNum = nb.number(GrammarConstants.PREDLABEL, startPred);
 		rcg.setStartPredLabel(startPredNum);
 		BinaryRCG res = new BinaryRCG(rcg, null);
-		HashMap<String, String[]> funcs = new HashMap<>();
-		HashMap<String, String[]> lindefs = new HashMap<>();
-		HashMap<String, String[]> lin = new HashMap<>();
-		HashMap<String, String> score = new HashMap<>();
 		String line = "";
-		Matcher m = IDENTIFIER.matcher("");
-		Matcher m_digit = DIGIT.matcher("");
-		Matcher m_comment = COMMENT.matcher("");
 		while ((line = super.readLine()) != null) {
-			ArrayList<String> identifiers = new ArrayList<>();
 			line = line.trim();
-			String[] sp = line.split("\\s+");
-			int pos = 0;
-			while (m.reset(sp[pos]).matches() && pos < sp.length - 1) {
-				identifiers.add(sp[pos]);
-				pos += 1;
-			}
-			String kw = sp[pos];
-			String[] def = Arrays.copyOfRange(sp, pos + 1, sp.length);
-			if (FUN.equals(kw)) {
-				for (String identifier : identifiers) {
-					funcs.put(identifier, def);
-				}
-			} else if (LIN.equals(kw)) {
-				for (String identifier : identifiers) {
-					lin.put(identifier, def);
-				}
-			} else if (LINDEF.equals(kw)) {
-				if (identifiers.size() != 1) {
-					throw new GrammarException(
-							"can only define linearization component for one id: "
-									+ line);
-				}
-				lindefs.put(identifiers.get(0), def);
-			} else if (m_digit.reset(kw).matches()) {
-				if (identifiers.size() != 1) {
-					throw new GrammarException(
-							"can only define score/count for one id: " + line);
-				}
-				if (sp.length != 2) {
-					throw new GrammarException(
-							"does not look like a score or count, but should be one: "
-									+ line);
-				}
-				// must be score
-				score.put(identifiers.get(0), sp[1]);
-			} else {
-				if (m_comment.reset(line).matches()) {
-					// do nothing
-				} else {
-					// also do nothing
-				}
-			}
-		}
+			String[] sp = line.split(":");
 
-		for (String funId : funcs.keySet()) {
-			String[] func = funcs.get(funId);
-			String[] linearization = lin.get(funId); // s1 s2
-			String count = score.get(funId);
-			// number all labels
-			int lhs = nb.number(GrammarConstants.PREDLABEL,
-					func[0] + String.valueOf(linearization.length));
-			int[] rhs = new int[func.length - 2];
-			if (rhs.length > 2) {
-				throw new GrammarException("Only binary and unary production allowed");
+			String prefix = sp[0];
+			String prod = sp[1];
+			String[] spProd = prod.split(" --> ");
+			String lhs = spProd[0];
+			String rhs = spProd[1].substring(0, spProd[1].indexOf('['));
+			String[] spRhs = rhs.split("\\s+");
+			String yf = spProd[1].substring(spProd[1].indexOf('['));
+			yf = yf.substring(3, yf.length() - 3);
+			
+			Clause c = new Clause(spRhs.length);
+			c.lhsname = nb.number(GrammarConstants.PREDLABEL, lhs);
+			c.rhsnames = new int[spRhs.length];
+			for (int i = 0; i < spRhs.length; ++i) {
+				c.rhsnames[i] = nb.number(GrammarConstants.PREDLABEL, spRhs[i]);
 			}
-			String[] rhsnames = new String[func.length - 2];
-			for (int i = 0; i < rhs.length; ++i) {
-				rhsnames[i] = func[i + 2];
-			}
-			Clause c = new Clause(rhs.length);
-			c.lhsname = lhs;
 
-			int varcnt = 1;
-			int lhsargpos = 0;
-			int[][] lhsargs = new int[linearization.length][];
-			Vector<Vector<Integer>> rhsargs = new Vector<Vector<Integer>>();
-			for (int i = 0; i < rhs.length; ++i) {
-				rhsargs.add(new Vector<Integer>());
-			}
-			for (int i = 0; i < linearization.length; ++i) {
-				int lhsargvarpos = 0;
-				String linid = linearization[i]; // s1
-				String[] lindef = lindefs.get(linid); // s1 = 1:2 3:0
-				lhsargs[lhsargpos] = new int[lindef.length];
-
-				for (String varRef : lindef) {
-					String[] rhspossplit = varRef.split(":");
-					int rhspos = Integer.valueOf(rhspossplit[0]);
-					int rhsargpos = Integer.valueOf(rhspossplit[1]);
-					lhsargs[lhsargpos][lhsargvarpos++] = varcnt;
-					Vector<Integer> rhsargarray = rhsargs.get(rhspos);
-					if (rhsargarray.size() < rhsargpos) {
-						for (int j = rhsargarray.size(); j < rhsargpos; ++j) {
-							rhsargarray.add(-1);
-						}
+			int varcnt = 0;
+			ArrayList<ArrayList<Integer>> arglist = new ArrayList<ArrayList<Integer>>();
+			ArrayList<Integer> l = new ArrayList<>();
+			ArrayList<Integer> r = new ArrayList<>();
+			for (String arg : yf.split("\\], \\[")) {
+				arglist.add(new ArrayList<Integer>());
+				for (String argel : arg.split(", ")) {
+					arglist.get(arglist.size() - 1).add(varcnt);
+					if (!Boolean.valueOf(argel)) {
+						l.add(varcnt);
+					} else {
+						r.add(varcnt);
 					}
-					rhsargs.get(rhspos).insertElementAt(varcnt, rhsargpos);
 					varcnt++;
 				}
-				lhsargpos++;
 			}
-			c.lhsargs = lhsargs;
-			c.rhsargs = new int[rhsargs.size()][];
-			for (int i = 0; i < rhsargs.size(); ++i) {
-				c.rhsargs[i] = new int[rhsargs.get(i).size()];
-				for (int j = 0; j < rhsargs.get(i).size(); ++j) {
-					c.rhsargs[i][j] = rhsargs.get(i).get(j);
+			c.lhsargs = new int[arglist.size()][];
+			for (int i = 0; i < arglist.size(); ++i) {
+				c.lhsargs[i] = new int[arglist.get(i).size()];
+				for (int j = 0; j < arglist.get(i).size(); ++j) {
+					c.lhsargs[i][j] = arglist.get(i).get(j);
 				}
 			}
-			for (int i = 0; i < rhsnames.length; ++i) {
-				rhs[i] = nb.number(GrammarConstants.PREDLABEL, rhsnames[i]
-						+ String.valueOf(c.rhsargs[i].length));
+			c.rhsargs = new int[2][];
+			c.rhsargs[0] = new int[l.size()];
+			for (int i = 0; i < l.size(); ++i) {
+				c.rhsargs[0][i] = l.get(i);
 			}
-			c.rhsnames = rhs;
+			c.rhsargs[1] = new int[r.size()];
+			for (int i = 0; i < r.size(); ++i) {
+				c.rhsargs[0][i] = l.get(i);
+			}
+			
 			BinaryClause bc = BinaryClause.constructClause(c, nb);
+			int count = Integer.valueOf(prefix);
 			bc.cnt = Integer.valueOf(count);
 			res.addClause(bc);
 		}
@@ -203,6 +129,8 @@ public class BinaryRCGReaderRCG extends BufferedReader {
 				+ "s1 -> 0:0 1:0 0:1\n" + "s2 -> 0:0 1:0\n" + "s3 -> 0:0\n"
 				+ "s4 -> 1:0\n" + "s5 -> 0:1 1:0\n";
 
+		grammar = "1:VROOT1 --> S1 $.1 [[[false, true]]]\n1:S1 --> VP2 VMFIN1 [[[false, true, false]]]\n1:VP2 --> VP2 VAINF1 [[[false], [false, true]]]\n";
+		
 		File temp = File.createTempFile("temp", ".txt");
 		temp.deleteOnExit();
 		BufferedWriter w = new BufferedWriter(new FileWriter(temp));
