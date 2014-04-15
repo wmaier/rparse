@@ -24,7 +24,6 @@
  ******************************************************************************/
 package de.tuebingen.rparse.grammar.read;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -50,7 +49,7 @@ import de.tuebingen.rparse.treebank.lex.Lexicon;
  * 
  * @author wmaier, ke
  */
-public class RCGReader extends BufferedReader {
+public class RCGReader extends GrammarReader<RCG> {
 
     /**
      * Pattern for splitting the data columns before the clause

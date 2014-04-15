@@ -24,7 +24,6 @@
  ******************************************************************************/
 package de.tuebingen.rparse.grammar.read;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,7 +45,7 @@ import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.grammar.RCG;
 import de.tuebingen.rparse.misc.Numberer;
 
-public class BinaryRCGReaderPMCFG extends BufferedReader {
+public class BinaryRCGReaderPMCFG extends GrammarReader<BinaryRCG> {
 
 	private static Pattern COMMENT = Pattern.compile("^\\s*[#/*-]");
 	private static Pattern IDENTIFIER = Pattern

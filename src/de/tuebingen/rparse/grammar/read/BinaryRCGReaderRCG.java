@@ -24,7 +24,6 @@
  ******************************************************************************/
 package de.tuebingen.rparse.grammar.read;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,7 +40,7 @@ import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.grammar.RCG;
 import de.tuebingen.rparse.misc.Numberer;
 
-public class BinaryRCGReaderRCG extends BufferedReader {
+public class BinaryRCGReaderRCG extends GrammarReader<BinaryRCG> {
 
 	private String startPred = "VROOT1";
 	private Numberer nb = null;

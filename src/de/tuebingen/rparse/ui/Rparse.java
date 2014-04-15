@@ -295,8 +295,11 @@ public class Rparse {
 				CommandLineOption.Separator.BLANK, true,
 				"Read trained model (serialized) from file []");
 		op.add(CommandLineOption.Prefix.DASH, "readBinary",
-		                CommandLineOption.Separator.BLANK, true,
-               		       "Read binary grammar from file (PMCFG format only) []");
+				CommandLineOption.Separator.BLANK, true,
+				"Read binary grammar from file []");
+		op.add(CommandLineOption.Prefix.DASH, "readBinaryFormat",
+				CommandLineOption.Separator.BLANK, true,
+				"Read binary grammar from file (format) [pmcfg*|rcg]");
 		op.add(CommandLineOption.Prefix.DASH, "test",
 				CommandLineOption.Separator.BLANK, true, "Testing treebank []");
 		op.add(CommandLineOption.Prefix.DASH, "testFormat",
@@ -541,11 +544,12 @@ public class Rparse {
 			System.exit(0);
 		}
 		if (op.check("availableTestFormats")) {
-			System.out.println("[rparse-tagged] Accepted unparsed input is one terminal/POS tag combination per line,\n" +
-                               "    separated by a slash. The last slash counts.\n" +
-                               "[export] NeGra export format (see Skut et al. (1997)).\n" +
-                               "[mrg] Any bracketed format like Penn Treebank MRG, >= 1 lines per sentences.\n" +
-                               "[treetagger] TreeTagger output format.");
+			System.out
+					.println("[rparse-tagged] Accepted unparsed input is one terminal/POS tag combination per line,\n"
+							+ "    separated by a slash. The last slash counts.\n"
+							+ "[export] NeGra export format (see Skut et al. (1997)).\n"
+							+ "[mrg] Any bracketed format like Penn Treebank MRG, >= 1 lines per sentences.\n"
+							+ "[treetagger] TreeTagger output format.");
 			System.exit(0);
 		}
 		if (op.check("availableEvalFormats")) {
@@ -608,7 +612,7 @@ public class Rparse {
 			trainType = op.getVal("trainType");
 		String trainSave = op.getVal("trainSave");
 		String trainSaveFormat = GrammarFormats.RCG_GF;
-		if (op.check("trainSaveFormat")) 
+		if (op.check("trainSaveFormat"))
 			trainSaveFormat = op.getVal("trainSaveFormat");
 		if (op.check("trainSave"))
 			trainSave = op.getVal("trainSave");
@@ -628,7 +632,7 @@ public class Rparse {
 		boolean doBinarization = binType != null && binType.length() > 0;
 		String binSave = op.getVal("binSave");
 		String binSaveFormat = GrammarFormats.RCG_GF;
-		if (op.check("binSaveFormat")) 
+		if (op.check("binSaveFormat"))
 			binSaveFormat = op.getVal("binSaveFormat");
 		String binSaveEncoding = DEFAULT_ENCODING;
 		if (op.check("binSaveEncoding"))
@@ -661,7 +665,7 @@ public class Rparse {
 		String saveModel = op.getVal("saveModel");
 		boolean doParse = op.check("doParse");
 		int timeout = 0;
-		if (op.check("timeout")) 
+		if (op.check("timeout"))
 			timeout = Integer.parseInt(op.getVal("timeout"));
 		String parserType = ParsingTypes.RCG_CYK_FIBO;
 		if (op.check("parserType"))
@@ -675,6 +679,10 @@ public class Rparse {
 		String test = op.getVal("test");
 		String readModel = op.getVal("readModel");
 		String readBinary = op.getVal("readBinary");
+		String readBinaryFormat = de.tuebingen.rparse.grammar.read.GrammarFormats.RCG_PMCFG;
+		if (op.check("readBinaryFormat")) {
+			readBinaryFormat = op.getVal("readBinaryFormat");
+		}
 		String testFormat = "rparse-tagged";
 		if (op.check("testFormat"))
 			testFormat = op.getVal("testFormat");
@@ -814,6 +822,7 @@ public class Rparse {
 			logger.config("  timeout         : " + timeout);
 			logger.config("  readModel       : " + readModel);
 			logger.config("  readBinary      : " + readBinary);
+			logger.config("  readBinaryFormat: " + readBinaryFormat);
 			logger.config("  parserType      : " + parserType);
 			logger.config("  yfComp          : " + yfcomp);
 			logger.config("  yfCompParams    : " + yfcompparams);
@@ -1202,14 +1211,17 @@ public class Rparse {
 				// write binarized grammar
 				if (binSave != null) {
 					String prefix = "bingrammar" + binSaveFormat;
-					logger.info("Writing binarized grammar to " + binSave + File.separator + prefix + "* ...");
+					logger.info("Writing binarized grammar to " + binSave
+							+ File.separator + prefix + "* ...");
 					try {
 						File binSaveDirectory = new File(binSave);
 						if (!binSaveDirectory.exists()) {
 							binSaveDirectory.mkdir();
 						}
-						GrammarWriter<BinaryRCG> gw = GrammarWriterFactory.getBinaryRCGWriter(binSaveFormat);
-						String grammarPath = binSaveDirectory.getAbsolutePath() + File.separator + prefix;
+						GrammarWriter<BinaryRCG> gw = GrammarWriterFactory
+								.getBinaryRCGWriter(binSaveFormat);
+						String grammarPath = binSaveDirectory.getAbsolutePath()
+								+ File.separator + prefix;
 						gw.write(pd.bg, pd.l, grammarPath, binSaveEncoding);
 					} catch (IOException e) {
 						logger.warning("IO Exception while writing grammar: "
@@ -1297,10 +1309,10 @@ public class Rparse {
 		} // end train
 
 		if (doParse) {
-		        if (readModel != null && readBinary != null) {
+			if (readModel != null && readBinary != null) {
 				logger.severe("Either load pretrained model or load a binary grammar, not both.");
 				System.exit(8);
-		        }
+			}
 			if (readModel != null) {
 				// load model from file
 				logger.info("Reading model from " + readModel + "...");
@@ -1316,15 +1328,15 @@ public class Rparse {
 					System.exit(102);
 				}
 				logger.info("finished.");
-			} 
+			}
 			if (readBinary != null) {
-                                logger.info("Reading binary grammar from " + readBinary + "...");
-                                try {
-				    pd = ParserData.buildFromBinaryGrammar(readBinary);
+				logger.info("Reading binary grammar from " + readBinary + "...");
+				try {
+					pd = ParserData.buildFromBinaryGrammar(readBinary, readBinaryFormat);
 				} catch (IOException e) {
-				    logger.severe("IOException: " + e.getMessage());
-				    e.printStackTrace();
-				    System.exit(101);
+					logger.severe("IOException: " + e.getMessage());
+					e.printStackTrace();
+					System.exit(101);
 				} catch (GrammarException e) {
 					logger.severe("GrammarException: " + e.getMessage());
 					e.printStackTrace();
@@ -1332,6 +1344,11 @@ public class Rparse {
 				} catch (UnknownTaskException e) {
 					logger.severe("UnknownTaskException: " + e.getMessage());
 					e.printStackTrace();
+					System.exit(101);
+				} catch (UnknownFormatException e) {
+					logger.severe("UnknownFormatException: " + e.getMessage());
+					e.printStackTrace();
+					System.exit(101);
 				}
 				logger.info("finished");
 			}
@@ -1497,29 +1514,33 @@ public class Rparse {
 
 				// Parse if not too long:
 				int size = input.size();
-                
-                if (size <= testMaxlen && size >= testMinlen) {
-                    logger.info("Parsing " + input.parserInputPrint(pd.nb) + "...");
-                    timer.start();
-                    try {
-                        boolean result = false;
-                        try {
-                            result = theParser.parseWithTimeout(input, timeout);
-                        } catch (TimeoutException e) {
-                            logger.warning(" **** TIMEOUT **** ");
-                        }
+
+				if (size <= testMaxlen && size >= testMinlen) {
+					logger.info("Parsing " + input.parserInputPrint(pd.nb)
+							+ "...");
+					timer.start();
+					try {
+						boolean result = false;
+						try {
+							result = theParser.parseWithTimeout(input, timeout);
+						} catch (TimeoutException e) {
+							logger.warning(" **** TIMEOUT **** ");
+						}
 
 						if (result) {
 							try {
 								if (Constants.DEPENDENCIES.equals(mode)) {
-									theParser.writeDependencyResult(parseResultWriter, sentenceNumber,
-                                                                    dependencyPostProcessingTasks);
+									theParser.writeDependencyResult(
+											parseResultWriter, sentenceNumber,
+											dependencyPostProcessingTasks);
 								} else {
-									theParser.writeResult(parseResultWriter, sentenceNumber,
-                                                          constituentPostprocessingTasks);
+									theParser.writeResult(parseResultWriter,
+											sentenceNumber,
+											constituentPostprocessingTasks);
 								}
 							} catch (TreebankException e) {
-								logger.severe("Could not write result due to error in postprocessing: " + e.getMessage());
+								logger.severe("Could not write result due to error in postprocessing: "
+										+ e.getMessage());
 								e.printStackTrace();
 								parseResultWriter.close();
 								System.exit(-1);
@@ -1528,10 +1549,12 @@ public class Rparse {
 						} else {
 							logger.info(theParser.getStats());
 							logger.info("\n ***************** No parse found");
-							parseResultWriter.write("\n\n ***************** " + sentenceNumber + ": No parse found \n\n");
+							parseResultWriter.write("\n\n ***************** "
+									+ sentenceNumber + ": No parse found \n\n");
 						}
 					} catch (IOException e) {
-						logger.warning("Could not write parsing result for " + sentenceNumber + ": " + e.getMessage());
+						logger.warning("Could not write parsing result for "
+								+ sentenceNumber + ": " + e.getMessage());
 					}
 
 					logger.info("finished in " + timer.time());

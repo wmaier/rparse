@@ -47,8 +47,11 @@ import de.tuebingen.rparse.grammar.estimates.Estimate;
 import de.tuebingen.rparse.grammar.estimates.EstimateTypes;
 import de.tuebingen.rparse.grammar.estimates.EstimatesFactory;
 import de.tuebingen.rparse.grammar.read.BinaryRCGReaderRCG;
+import de.tuebingen.rparse.grammar.read.GrammarReader;
+import de.tuebingen.rparse.grammar.read.GrammarReaderFactory;
 import de.tuebingen.rparse.misc.Numberer;
 import de.tuebingen.rparse.misc.ParameterException;
+import de.tuebingen.rparse.treebank.UnknownFormatException;
 import de.tuebingen.rparse.treebank.UnknownTaskException;
 import de.tuebingen.rparse.treebank.lex.Lexicon;
 
@@ -185,12 +188,12 @@ public class ParserData implements Serializable {
 		return ret;
 	}
 
-	public static ParserData buildFromBinaryGrammar(String filename)
-			throws IOException, GrammarException, UnknownTaskException, ParameterException {
+	public static ParserData buildFromBinaryGrammar(String filename, String format)
+			throws IOException, GrammarException, UnknownTaskException, ParameterException, UnknownFormatException {
 		ParserData pd = new ParserData();
 		Numberer nb = new Numberer();
 		pd.nb = nb;
-		BinaryRCGReaderRCG r = new BinaryRCGReaderRCG(new File(filename), nb);
+		GrammarReader<BinaryRCG> r = GrammarReaderFactory.getBinaryRCGReader(format, new File(filename), nb);
 		pd.bg = r.getRCG();
 		TrainingMethod t = TrainingMethodFactory.getTrainingMethod(TrainingMethods.MLE, pd.g, pd.bg, pd.l, pd.nb, "");
 		t.setDoBinarized(true);
