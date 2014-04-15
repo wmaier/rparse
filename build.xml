@@ -81,6 +81,7 @@ for more information.
       <pathelement path="${jgraph.path}"/>
     </classpath>
     <compilerarg value="-Xlint"/>
+    <compilerarg line="-encoding UTF-8"/>
   </javac>
   <copy todir="${rparse.bin}">
     <fileset dir="${rparse.src}" includes="**/*.headrules **/*.xsl*"/>
