@@ -109,7 +109,7 @@ public class BinaryRCGReaderRCG extends BufferedReader {
 			}
 			c.rhsargs[1] = new int[r.size()];
 			for (int i = 0; i < r.size(); ++i) {
-				c.rhsargs[0][i] = l.get(i);
+				c.rhsargs[1][i] = r.get(i);
 			}
 			
 			BinaryClause bc = BinaryClause.constructClause(c, nb);

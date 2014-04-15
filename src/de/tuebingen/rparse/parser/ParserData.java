@@ -38,15 +38,15 @@ import java.util.zip.GZIPOutputStream;
 
 import de.tuebingen.rparse.grammar.BinaryClause;
 import de.tuebingen.rparse.grammar.BinaryRCG;
-import de.tuebingen.rparse.grammar.estimates.EstimatesFactory;
-import de.tuebingen.rparse.grammar.estimates.EstimateTypes;
 import de.tuebingen.rparse.grammar.GrammarException;
 import de.tuebingen.rparse.grammar.RCG;
 import de.tuebingen.rparse.grammar.TrainingMethod;
 import de.tuebingen.rparse.grammar.TrainingMethodFactory;
 import de.tuebingen.rparse.grammar.TrainingMethods;
 import de.tuebingen.rparse.grammar.estimates.Estimate;
-import de.tuebingen.rparse.grammar.read.BinaryRCGReaderPMCFG;
+import de.tuebingen.rparse.grammar.estimates.EstimateTypes;
+import de.tuebingen.rparse.grammar.estimates.EstimatesFactory;
+import de.tuebingen.rparse.grammar.read.BinaryRCGReaderRCG;
 import de.tuebingen.rparse.misc.Numberer;
 import de.tuebingen.rparse.misc.ParameterException;
 import de.tuebingen.rparse.treebank.UnknownTaskException;
@@ -190,7 +190,7 @@ public class ParserData implements Serializable {
 		ParserData pd = new ParserData();
 		Numberer nb = new Numberer();
 		pd.nb = nb;
-		BinaryRCGReaderPMCFG r = new BinaryRCGReaderPMCFG(new File(filename), nb);
+		BinaryRCGReaderRCG r = new BinaryRCGReaderRCG(new File(filename), nb);
 		pd.bg = r.getRCG();
 		TrainingMethod t = TrainingMethodFactory.getTrainingMethod(TrainingMethods.MLE, pd.g, pd.bg, pd.l, pd.nb, "");
 		t.setDoBinarized(true);
@@ -199,6 +199,7 @@ public class ParserData implements Serializable {
 		pd.yfcomp = YieldFunctionComposerFactory.getYieldFunctionComposer(YieldFunctionComposerTypes.FAST, "");
 		pd.est = EstimatesFactory.getEstimates(EstimateTypes.OFF, pd.bg, pd.nb, 200);
 		r.close();
+		pd.computeLogprobs();
 		return pd;
 	}
 
