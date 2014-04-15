@@ -1,11 +1,11 @@
 /*******************************************************************************
- * File GrammarFormalisms.java
+ * File BinaryRCGReaderPMCFG.java
  * 
  * Authors:
  *    Wolfgang Maier
  *    
  * Copyright:
- *    Wolfgang Maier, 2011
+ *    Wolfgang Maier, 2014
  * 
  * This file is part of rparse, see <www.wolfgang-maier.net/rparse>.
  * 

@@ -46,7 +46,6 @@ import de.tuebingen.rparse.grammar.TrainingMethods;
 import de.tuebingen.rparse.grammar.estimates.Estimate;
 import de.tuebingen.rparse.grammar.estimates.EstimateTypes;
 import de.tuebingen.rparse.grammar.estimates.EstimatesFactory;
-import de.tuebingen.rparse.grammar.read.BinaryRCGReaderRCG;
 import de.tuebingen.rparse.grammar.read.GrammarReader;
 import de.tuebingen.rparse.grammar.read.GrammarReaderFactory;
 import de.tuebingen.rparse.misc.Numberer;

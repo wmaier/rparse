@@ -92,9 +92,6 @@ public class CYKParserTwo implements RCGParser {
 	// write result (dependencies)
 	private SentenceWriter<DependencyForest<DependencyForestNodeLabel, String>> dw;
 
-	// timeout in nanoseconds (inactive if <= 0)
-	private long timeout;
-
 	// the numberer
 	private final Numberer nb;
 
