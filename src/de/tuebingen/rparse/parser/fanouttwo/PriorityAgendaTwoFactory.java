@@ -52,10 +52,6 @@ public class PriorityAgendaTwoFactory {
             return new PriorityAgendaTwoFibonacci(nb);
         }
         
-        if (PriorityAgendaTypes.PRIO.equals(type)) {
-        	return new PriorityAgendaTwoPrio(nb);
-        }
-
         throw new UnknownFormatException(type);
 
     }

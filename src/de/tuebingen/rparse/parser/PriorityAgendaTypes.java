@@ -41,9 +41,4 @@ public interface PriorityAgendaTypes {
      */
     public final static String NAIVE     = "naive";
 
-    /**
-     * uses the Java 8 PriorityQueue
-     */
-	public static final String PRIO = "prio";
-
 }
