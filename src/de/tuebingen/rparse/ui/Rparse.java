@@ -407,7 +407,7 @@ public class Rparse {
 				"If inputTreebankDir, then this is a glob filter on all files in this dir");
 		op.add(CommandLineOption.Prefix.DASH, "inputFormat",
 				CommandLineOption.Separator.BLANK, true,
-				"Input treebank format [export*], try -availableInputFormats");
+				"Input treebank format [export*]");
 		op.add(CommandLineOption.Prefix.DASH, "inputEncoding",
 				CommandLineOption.Separator.BLANK, true,
 				"Input treebank encoding [UTF-8*]");
@@ -439,7 +439,7 @@ public class Rparse {
 				"Split output treebank/grammar directory, file name prefix of output files []");
 		op.add(CommandLineOption.Prefix.DASH, "outputFormat",
 				CommandLineOption.Separator.BLANK, true,
-				"Output treebank/grammar format, try -availableOutputFormats");
+				"Output treebank/grammar format");
 		op.add(CommandLineOption.Prefix.DASH, "outputGrammar",
 				CommandLineOption.Separator.BLANK, false, "Output a grammar");
 		op.add(CommandLineOption.Prefix.DASH, "outputEncoding",
