@@ -279,7 +279,7 @@ public class BinaryRCG extends RCG {
 
     @Override
     public String stats() {
-        int maxArity = Collections.max(stateToArity.values());
+        int maxArity = (int) Collections.max(stateToArity.values());
         return "Binarized " + Collections.max(stateToArity.values()) + "-RCG"
                 + "\nClauses: " + clauses.size() + "\nLabels: "
                 + (clByParent.keySet().size() + getPreterminals().size())
