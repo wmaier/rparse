@@ -114,11 +114,11 @@ public class IncrementalCoNLLProcessor extends IncrementalTreebankProcessor<Depe
     private void processToken(String line,
             DependencyForest<DependencyForestNodeLabel, String> graph, int expectedID)
             throws TreebankException {
-        String[] fields = line.split("\\t");
+        String[] fields = line.split("\\s+");
 
         if (fields.length != 10) {
             throw new TreebankException("wrong number of fields ("
-                    + fields.length + ") (fields must be separated by tabs)");
+                    + fields.length + ")");
         }
 
         // ID:
