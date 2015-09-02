@@ -1,11 +1,11 @@
 /*******************************************************************************
- * File DependencyProcessingTasks.java
+ * File DependencyProcessingTaskFactory.java
  * 
  * Authors:
  *    Wolfgang Maier
  *    
  * Copyright:
- *    Wolfgang Maier, 2011
+ *    Wolfgang Maier, 2015
  * 
  * This file is part of rparse, see <www.wolfgang-maier.net/rparse>.
  * 
@@ -24,10 +24,36 @@
  ******************************************************************************/
 package de.tuebingen.rparse.treebank.dep;
 
-public interface DependencyProcessingTasks {
+import java.util.HashMap;
+import java.util.Map;
+
+import de.tuebingen.rparse.treebank.ProcessingTask;
+import de.tuebingen.rparse.treebank.TreebankException;
+
+public class DependencyGapAnalyzer extends ProcessingTask<DependencyForest<DependencyForestNodeLabel, String>> {
+
+	private Map<Integer,Integer> degs;
 	
-	public static final String DEP_TREEBANK_GETTER = "treebank";
+	public DependencyGapAnalyzer() {
+		degs = new HashMap<>();
+	}
 	
-	public static final String DEP_GAPS = "gaps";
+	@Override
+	public void processSentence(DependencyForest<DependencyForestNodeLabel, String> sentence) throws TreebankException {
+		int gd = sentence.getGapDegree();
+		if (!degs.containsKey(gd)) {
+			degs.put(gd, 0);
+		}
+		degs.put(gd, degs.get(gd) + 1);
+	}
+
+
+	@Override
+	public void done() throws TreebankException {
+		System.out.println("gap degree stats: ");
+		for (int deg : degs.keySet()) {
+			System.err.println(degs.get(deg) + " sent. with gap degree " + deg);
+		}
+	}
 
 }

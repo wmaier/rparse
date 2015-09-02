@@ -37,6 +37,10 @@ public class DependencyProcessingTaskFactory {
         	return new TreebankGetter<DependencyForest<DependencyForestNodeLabel, String>>();
         }
         
+        if (DependencyProcessingTasks.DEP_GAPS.equals(name)) {
+        	return new DependencyGapAnalyzer();
+        }
+        
         throw new UnknownTaskException(name);
     }
 

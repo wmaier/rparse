@@ -398,7 +398,7 @@ public class DependencyForest<T, R> implements HasSize, HasID, HasGapDegree {
 
 	@Override
 	public int getGapDegree() {
-		return 0;
+		return calcGapDegree();
 	}
 
 	public String getTerminalsAsString() {
