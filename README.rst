@@ -6,7 +6,7 @@
    :align: right
    :alt: Emmy Noether Logo
 
-.. image:: http://www.wolfgang-maier.net/fserv/misc/hhu.jpg
+.. image:: http://www.wolfgang-maier.net/fserv/misc/hhu-small.png
    :align: right
    :alt: HHU Logo
 
