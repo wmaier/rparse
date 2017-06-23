@@ -90,6 +90,10 @@ public class RparseParserInputReader
                 }
             }
         }
+        
+        if (!sentence.isEmpty()) {
+        	logger.warning("Is there no newline at the end of the data?");
+        }
 
         // no next sentence
         return null;
