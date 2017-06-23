@@ -92,7 +92,12 @@ public class RparseParserInputReader
         }
         
         if (!sentence.isEmpty()) {
-        	logger.warning("Is there no newline at the end of the data?");
+            try {
+                return parseRparseInput(sentence, nb);
+            } catch (LexiconException e) {
+                System.err.println(e.getMessage());
+                return null;
+            }
         }
 
         // no next sentence
