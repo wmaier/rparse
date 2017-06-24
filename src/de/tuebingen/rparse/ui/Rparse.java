@@ -1486,8 +1486,10 @@ public class Rparse {
 							System.exit(1);
 						}
 					} catch (NoSuchElementException e) {
-						logger.warning("Input ended before specified ranges were complete (no sentence "
-								+ sentenceNumber + ")");
+						if (!parseRanges.isUnbounded()) {
+							logger.warning("Input ended before specified ranges were complete (no sentence "
+									+ sentenceNumber + ")");
+						}
 						break ranges;
 					}
 					sentenceNumber++;
@@ -1495,8 +1497,10 @@ public class Rparse {
 
 				// Here we can check, we are going to use the tree anyway.
 				if (!parserInputReader.hasNext()) {
-					logger.warning("Input ended before specified ranges were complete (no sentence "
-							+ sentenceNumber + ")");
+					if (!parseRanges.isUnbounded()) {
+						logger.warning("Input ended before specified ranges were complete (no sentence "
+								+ sentenceNumber + ")");
+					}
 					break ranges;
 				}
 
